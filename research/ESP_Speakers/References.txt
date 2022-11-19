@@ -1,0 +1,2 @@
+DAC code - https://esphome.io/components/output/esp32_dac.html#:~:text=The%20ESP32%20DAC%20platform%20allows,no%20need%20for%20additional%20filtering
+
