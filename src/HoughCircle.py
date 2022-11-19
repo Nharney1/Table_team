@@ -10,7 +10,7 @@ Y_MAX = 610
 
 def DetectCircles():
 	# Read in the input image
-	path = '/home/table_team/Desktop/testing/CV_Testing/Images/input_02.png' # This will need to change, current image is a sample image
+	path = '/home/table_team/Desktop/testing/test_images/input_02.png' # This will need to change, current image is a sample image
 	img = cv.imread(path, cv.IMREAD_COLOR)
 
 	# Resize the image, needed for displaying the output image
