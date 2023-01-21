@@ -18,7 +18,7 @@ class AnkerCamera(object):
 			print('Cannot capture image')
 		else:
 			cv2.imshow('Sample image', image)
-			cv2.imwrite('C:/Users/UHSgi/Desktop/SD_scripts/cv/test_image.png', image)
+			cv2.imwrite('C:/Users/UHSgi/Desktop/SD_scripts/cv/input_29.png', image) # Need to change on Jetson Nano
 			cv2.waitKey(0)
 
 	def take_video(self):
