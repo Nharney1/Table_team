@@ -68,7 +68,3 @@ def DetectCircles():
 			if SHOW_IMAGES: 
 				cv.imshow('balls', resize_img)
 		return Ball_list
-
-
-if __name__ == "__main__":
-	DetectCircles()
