@@ -23,14 +23,15 @@ def main():
 		# myCam.take_picture()
 		Current_Ball_List = DetectCircles()
 
-		try:
-			ret = DetectShot(Previous_Ball_List, Current_Ball_List)
-			# Need to add shot outcome logic in here
-			print(ret)
-			
-		except InvalidBallCount:
-			print("Invalid ball count, something is wrong")
-		break
+		if Previous_Ball_List is not None:
+			try:
+				ret = DetectShot(Previous_Ball_List, Current_Ball_List)
+				# Need to add shot outcome logic in here
+				print(ret)
+
+			except InvalidBallCount:
+				print("Invalid ball count, something is wrong")
+			break
 
 		# Current shot is complete, store current game state
 		Previous_Ball_List = Current_Ball_List
