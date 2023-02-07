@@ -37,7 +37,6 @@ def DetectShot(previousShot, currentShot):
 
 	# Assume the user is using the blue balls
 	# Check if the user made a game ball or opponent ball
-
 	if c_blue < p_blue:
 		for i in range (p_blue - c_blue):
 			print("Game ball made!")
@@ -46,7 +45,6 @@ def DetectShot(previousShot, currentShot):
 			print("Opponent ball made!")
 
 	# Check if there is an end game scenario
-
 	if c_black == 0 and c_white == 0:
 		print("Sunk black and white ball")
 		return 'loss'

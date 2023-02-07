@@ -13,24 +13,29 @@ def main():
 	Previous_Ball_List = None
 
 	# Initialize connections
-	myCam = AnkerCamera(2) # 1 on Jetson Nano; 2 on laptop
-	pi_bluetooth_socket = BluetoothServerSocket(10) # Port 10 (arbitrary choice)
-	myCam.take_video()
+	# myCam = AnkerCamera(2) # 1 on Jetson Nano; 2 on laptop
+	# pi_bluetooth_socket = BluetoothServerSocket(10) # Port 10 (arbitrary choice)
+	# myCam.take_video()
 
 	while(Continue):
-		
-		Begin computer vision
-		myCam = AnkerCamera(2) # 1 on Jetson Nano; 2 on laptop
-		myCam.take_picture()
+		# Begin computer vision
+		# myCam = AnkerCamera(2) # 1 on Jetson Nano; 2 on laptop
+		# myCam.take_picture()
 		Current_Ball_List = DetectCircles()
-		Previous_Ball_List = Current_Ball_List
 
 		try:
 			ret = DetectShot(Previous_Ball_List, Current_Ball_List)
+			# Need to add shot outcome logic in here
 			print(ret)
+			
 		except InvalidBallCount:
 			print("Invalid ball count, something is wrong")
 		break
+
+		# Current shot is complete, store current game state
+		Previous_Ball_List = Current_Ball_List
+
+		Startup = False
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ SHOW_IMAGES = True
 def DetectCircles():
 	Ball_list = []
 
-	path = 'C:/Users/UHSgi/Desktop/SD_scripts/cv/input_26.png' # This will need to change, current image is a sample image
+	path = 'C:/Users/UHSgi/Desktop/SD_scripts/cv/input_24.png' # This will need to change, current image is a sample image
 	img = cv.imread(path, cv.IMREAD_COLOR)
 
 	# Resize the image, needed for displaying the output image
@@ -37,11 +37,11 @@ def DetectCircles():
 	# Convert to grayscale for the Hough Circle Transform
 	gray_img = cv.cvtColor(resize_img, cv.COLOR_BGR2GRAY)
 
-	# Minimum distance between balls is 15 pixels
+	dp = 1
 	min_distance = 15
 	
 	# Make the call to detect circles in image
-	circles = cv.HoughCircles(gray_img, cv.HOUGH_GRADIENT, 1, min_distance, param1 = 30, param2 = 14, minRadius = 15, maxRadius = 25)
+	circles = cv.HoughCircles(gray_img, cv.HOUGH_GRADIENT, dp, min_distance, param1 = 30, param2 = 14, minRadius = 15, maxRadius = 25)
 
 	if circles is not None:
 		circles = np.uint16(np.around(circles))
@@ -57,7 +57,8 @@ def DetectCircles():
 			if x < X_MIN + ERROR or x > X_MAX - ERROR or y < Y_MIN + ERROR or y > Y_MAX - ERROR:
 				continue
 
-			cv.circle(resize_img, center, radius, (255,0,255), 3) # Draw a circle around the ball
+			# Draw a circle around the ball
+			cv.circle(resize_img, center, radius, (255,255,255), 3)
 
 			# Determine the color of the ball
 			temp_ball = Ball(x,y,radius)
@@ -67,4 +68,6 @@ def DetectCircles():
 
 			if SHOW_IMAGES: 
 				cv.imshow('balls', resize_img)
+				cv.waitKey(0)
+
 		return Ball_list

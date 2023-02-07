@@ -9,7 +9,7 @@ ERROR = 10
 
 # Color thresholds
 WHITE_BALL = 225
-BLACK_BALL = 100
+COLOR_BALL = 140
 
 class Ball(object):
 	def __init__(self, x, y, radius):
@@ -24,6 +24,7 @@ class Ball(object):
 		self.color = None
 
 	def CleanBGRVector(self, img):
+
 		# Define a sampling interval
 		intervals = [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10]
 		samples = len(intervals) * len(intervals)
@@ -48,7 +49,7 @@ class Ball(object):
 	def SetColor(self):
 		if self.blue >= WHITE_BALL and self.green >= WHITE_BALL and self.red >= WHITE_BALL:
 			self.color = 'white'
-		elif self.blue <= BLACK_BALL and self.green <= BLACK_BALL and self.red <= BLACK_BALL:
+		elif self.blue <= COLOR_BALL and self.green <= COLOR_BALL and self.red <= COLOR_BALL:
 			self.color = 'black'
 		elif self.blue > self.green:
 			self.color = 'blue'
