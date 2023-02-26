@@ -1,4 +1,4 @@
-import sys
+from typing import List
 import cv2 as cv 
 import numpy as np
 from .Ball import Ball
@@ -12,10 +12,10 @@ ERROR = 10
 
 SHOW_IMAGES = True
 
-def DetectCircles():
+def DetectCircles() -> List[Ball]:
 	Ball_list = []
 
-	path = 'C:/Users/UHSgi/Desktop/SD_scripts/cv/input_24.png' # This will need to change, current image is a sample image
+	path = 'C:/Users/aaron/OneDrive/Desktop/Coding/SD_CV/Table_team/test_images/input_22.png' # This will need to change, current image is a sample image
 	img = cv.imread(path, cv.IMREAD_COLOR)
 
 	# Resize the image, needed for displaying the output image
