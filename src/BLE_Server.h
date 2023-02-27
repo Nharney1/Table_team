@@ -51,7 +51,7 @@ BLEDescriptor yawDescriptor(BLEUUID((uint16_t)0x2903));
 BLEDescriptor buttonDescriptor(BLEUUID((uint16_t)0x2903));
 BLEDescriptor fsmDescriptor(BLEUUID((uint16_t)0x2903));
 
-BLEDescriptor(noahDescriptor(BLEUUID((uint16_t)0x2903));
+BLEDescriptor noahDescriptor(BLEUUID((uint16_t)0x2903));
 
 // Function prototypes
 void createCharacteristics();
@@ -60,10 +60,10 @@ void updateCharacteristic(BLECharacteristic cueCharacteristic, int value);
 class MyCharacteristicCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
         uint8_t * Data = pCharacteristic->getData();
-        Serial.printf("State was set to: %d\n", Data[0]);
+        Serial.printf("Got value: %d\n", Data[0]);
   
         //set the characteristic to that char & start service
-        pCharacteristic->setValue(num);
+        pCharacteristic->setValue(3);
         pCharacteristic->notify();
      }
  };
