@@ -1,4 +1,5 @@
 import  socket
+i
 
 class BluetoothServerSocket(object):
 	def __init__(self, port):
@@ -35,3 +36,4 @@ class BluetoothServerSocket(object):
 	def close(self):
 		self.client.close()
 		self.socket.close()
+

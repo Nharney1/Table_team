@@ -7,17 +7,14 @@ from bluezero import central
 import threading
 import time 
 
+
+NOAH_SERVER_UUID = "df9f28cb-9b6a-4c8f-a3ff-8f087738c90a"
+NOAH_UUID = "7bb6db74-6c47-4722-bb33-bfa652f64713"
+
 connected = False
 monitor = None #This is a temporary name for the client/Central object
 bt_thread = None
-acc_char = None
-roll_char = None
-pitch_char = None
-yaw_char = None
-button_char = None
-fms_char = None
 notification_cb_set = False
-
 noah_char = None
 
 def on_disconnect(self):
@@ -48,25 +45,13 @@ def on_disconnect(self):
             devices = scan_for_devices()
             print('Found our device!')
         for dev in devices:
-            if SERVER_SRV.lower() in dev.uuids:
+            if NOAH_SERVER_UUID.lower() in dev.uuids:
                 print('Found our device!')
                 bt_thread = threading.Thread(target=connect_and_run, args=[dev])
                 bt_thread.start()
                 print(f"Just started thread {bt_thread}")
                 break
         break
-
-
-SERVER_SRV = '91bad492-b950-4226-aa2b-4ede9fa42f59' 
-ACC_CHAR_UUID = 'ca73b3ba-39f6-4ab3-91ae-186dc9577d99'
-ROLL_CHAR_UUID = '1d710a64-929a-11ed-a1eb-0242ac120002'
-PITCH_CHAR_UUID = '1d710d8e-929a-11ed-a1eb-0242ac120002'
-YAW_CHAR_UUID = '1d710f6e-929a-11ed-a1eb-0242ac120002'
-BUTTON_CHAR_UUID = '1d7110c2-929a-11ed-a1eb-0242ac120002'
-FMS_CHAR_UUID = '1d7111da-929a-11ed-a1eb-0242ac120002'
-
-NOAH_SERVER_UUID = "df9f28cb-9b6a-4c8f-a3ff-8f087738c90a"
-NOAH_UUID = "7bb6db74-6c47-4722-bb33-bfa652f64713"
 
 def scan_for_devices(
         adapter_address=None,
@@ -87,7 +72,6 @@ def scan_for_devices(
         # Filter dongles by adapter_address if specified
         if adapter_address and adapter_address.upper() != dongle.address():
             continue
-        
         #MENA reset before scanning to not pickup old results
        # central.Central.available(dongle.address) = None
 
@@ -96,142 +80,15 @@ def scan_for_devices(
 
         # Iterate through discovered devices
         for dev in central.Central.available(dongle.address):
-            # Filter devices if we specified a HRM address
-            if device_address and device_address == dev.address:
-                yield dev
+            if  dev.name == "NOAH_ESP32":
+                print(str(dev.name))
+                for uuid in dev.uuids:
+                    print(uuid)
 
             # Otherwise, return devices that advertised the HRM Service UUID
-            if SERVER_SRV.lower() in dev.uuids:
+            if NOAH_SERVER_UUID.lower() in dev.uuids:
                 print("Found a device with the SRV uuid. Yielding it...")
                 yield dev
-
-def on_new_acc(iface, changed_props, invalidated_props):
-    """
-    Callback used to receive notification events from the device.
-    :param iface: dbus advanced data
-    :param changed_props: updated properties for this event, contains Value
-    :param invalidated_props: dvus advanced data
-    """
-    value = changed_props.get('Value', None)
-    print(f'Value is {value}')
-    if not value:
-        print("\'Value\' not found!")
-        return
-    #TODO 
-    number = int(value[3] )#struct.unpack(fmt, bytes(payload[0:struct.calcsize(fmt)])) REMOVED MENA
-    number = (number <<8) + int(value[2])
-    number = (number <<8) + int(value[1])
-    number = (number <<8) + int(value[0])
-    number = int(number)
-    if (number > 1000000): #ASK LUKE
-        number -= 4294967296
-    print(f"Received the acc value {number}.")
-
-def on_new_roll(iface, changed_props, invalidated_props):
-    """
-    Callback used to receive notification events from the device.
-    :param iface: dbus advanced data
-    :param changed_props: updated properties for this event, contains Value
-    :param invalidated_props: dvus advanced data
-    """
-    value = changed_props.get('Value', None)
-    if not value:
-        print("\'Value\' not found!")
-        return
-
-    number = int(value[3] )#struct.unpack(fmt, bytes(payload[0:struct.calcsize(fmt)])) REMOVED MENA
-    print(number)
-    binn = bin(number)
-    print(f"Binary value is {binn}")
-    number = (number <<8) + int(value[2])
-    number = (number <<8) + int(value[1]) 
-    number = (number <<8) + int(value[0])
-    number = int(number)
-    if (number > 1000000): #ASK LUKE
-        number -= 4294967296
-    print(f"Received the roll value {int(number)}.")
-
-def on_new_pitch(iface, changed_props, invalidated_props):
-    """
-    Callback used to receive notification events from the device.
-    :param iface: dbus advanced data
-    :param changed_props: updated properties for this event, contains Value
-    :param invalidated_props: dvus advanced data
-    """
-    value = changed_props.get('Value', None)
-    if not value:
-        print("\'Value\' not found!")
-        return
-
-    number = int(value[3] )#struct.unpack(fmt, bytes(payload[0:struct.calcsize(fmt)])) REMOVED MENA
-    number = (number <<8) + int(value[2])
-    number = (number <<8) + int(value[1])
-    number = (number <<8) + int(value[0])
-    number = int(number)
-    if (number > 1000000): #ASK LUKE
-        number -= 4294967296
-    print(f"Received the pitch value {number}.")
-
-def on_new_yaw(iface, changed_props, invalidated_props):
-    """
-    Callback used to receive notification events from the device.
-    :param iface: dbus advanced data
-    :param changed_props: updated properties for this event, contains Value
-    :param invalidated_props: dvus advanced data
-    """
-    value = changed_props.get('Value', None)
-    if not value:
-        print("\'Value\' not found!")
-        return
-
-    number = int(value[3] )#struct.unpack(fmt, bytes(payload[0:struct.calcsize(fmt)])) REMOVED MENA
-    number = (number <<8) + int(value[2])
-    number = (number <<8) + int(value[1])
-    number = (number <<8) + int(value[0])
-    number = int(number)
-    if (number > 1000000): #ASK LUKE
-        number -= 4294967296
-    print(f"Received the yaw value {number}.")
-
-def on_new_button(iface, changed_props, invalidated_props):
-    """
-    Callback used to receive notification events from the device.
-    :param iface: dbus advanced data
-    :param changed_props: updated properties for this event, contains Value
-    :param invalidated_props: dvus advanced data
-    """
-    value = changed_props.get('Value', None)
-    if not value:
-        print("\'Value\' not found!")
-        return
-
-    number = int(value[3] )#struct.unpack(fmt, bytes(payload[0:struct.calcsize(fmt)])) REMOVED MENA
-    number = (number <<8) + int(value[2])
-    number = (number <<8) + int(value[1])
-    number = (number <<8) + int(value[0])
-    number = int(number)
-    print(f"Received the button value {number}.")
-
-def on_new_fms(iface, changed_props, invalidated_props):
-    """
-    Callback used to receive notification events from the device.
-    :param iface: dbus advanced data
-    :param changed_props: updated properties for this event, contains Value
-    :param invalidated_props: dvus advanced data
-    """
-    value = changed_props.get('Value', None)
-    if not value:
-        print("\'Value\' not found!")
-        return
-
-    number = int(value[3] )#struct.unpack(fmt, bytes(payload[0:struct.calcsize(fmt)])) REMOVED MENA
-    number = (number <<8) + int(value[2])
-    number = (number <<8) + int(value[1])
-    number = (number <<8) + int(value[0])
-    number = int(number)
-    print(f"Received the fms value {number}. Setting state to 5")
-    x = 5
-    fms_char.write_value(x.to_bytes(1,byteorder='big', signed=False))
 
 def on_new_noah(iface, changed_props, invalidated_props):
     value = changed_props.get('Value', None)
@@ -239,11 +96,13 @@ def on_new_noah(iface, changed_props, invalidated_props):
         print("\'Value\' not found!")
         return
 
-    number = int(value[0])
-    print(f"Received the fms value {number}. Setting state to 5")
-    x = 5
-    noah_char.write_value(x.to_bytes(1,byteorder='big', signed=False))
-    # Only update the global here, do the actual writing in mail
+    retVal = int(value[0])
+
+    print("Got value "  + str(retVal))
+    # number = int(value[0])
+    # x = 5
+    #  noah_char.write_value(x.to_bytes(1,byteorder='big', signed=False))
+    # Only update the global here, do the actual writing in main
 
 
 
@@ -254,13 +113,8 @@ def connect_and_run(dev=None, device_address=None):
     :param device_address: instead, connect to a specific MAC address
     """
     # Create Interface to Central
-    global acc_char
-    global roll_char
-    global pitch_char
-    global yaw_char
-    global button_char
-    global fms_char
     global noah_char
+
     if dev:
         print('Dev is being used')
         global monitor
@@ -274,14 +128,7 @@ def connect_and_run(dev=None, device_address=None):
             # Characteristics that we're interested must be added to the Central
             # before we connect so they automatically resolve BLE properties
             # Heart Rate Measurement - notify
-            acc_char = monitor.add_characteristic(SERVER_SRV, ACC_CHAR_UUID)
-            roll_char = monitor.add_characteristic(SERVER_SRV, ROLL_CHAR_UUID)
-            pitch_char = monitor.add_characteristic(SERVER_SRV, PITCH_CHAR_UUID)
-            fms_char = monitor.add_characteristic(SERVER_SRV, FMS_CHAR_UUID)
-            yaw_char = monitor.add_characteristic(SERVER_SRV, YAW_CHAR_UUID)
-            button_char = monitor.add_characteristic(SERVER_SRV, BUTTON_CHAR_UUID)
             noah_char = monitor.add_characteristic(NOAH_SERVER_UUID, NOAH_UUID)
-            #yaw_char.add_characteristic_cb(on_new_number)
     else:
         monitor = central.Central(device_addr=device_address)
 
@@ -290,9 +137,8 @@ def connect_and_run(dev=None, device_address=None):
         print("Connecting to " + dev.alias)
     else:
         print("Connecting to " + device_address)
-    
     monitor.connect()
-
+    
     # Check if Connected Successfully
     if not monitor.connected:
         print("Didn't connect to device!")
@@ -303,23 +149,11 @@ def connect_and_run(dev=None, device_address=None):
     print('Connection successful!')
 
     # Enable heart rate notifications
-    roll_char.start_notify()
-    pitch_char.start_notify()
-    acc_char.start_notify()
-    yaw_char.start_notify()
-    button_char.start_notify()
-    fms_char.start_notify()
     noah_char.start_notify()
 
     global notification_cb_set
     if not notification_cb_set:
         print('Setting callback for notifications')
-        acc_char.add_characteristic_cb(on_new_acc)
-        roll_char.add_characteristic_cb(on_new_roll)
-        pitch_char.add_characteristic_cb(on_new_pitch)
-        yaw_char.add_characteristic_cb(on_new_yaw)
-        button_char.add_characteristic_cb(on_new_button)
-        fms_char.add_characteristic_cb(on_new_fms)
         noah_char.add_characteristic_cb(on_new_noah)
         notification_cb_set = True
 
@@ -329,15 +163,12 @@ def connect_and_run(dev=None, device_address=None):
     except KeyboardInterrupt:
         print("Disconnecting")
 
-    #comment out for now TODO
-    #print('Disconnecting...')
-    #yaw_char.stop_notify()
     #monitor.disconnect()
     print('Exiting bluetooth thread!')
 
-
 if __name__ == '__main__':
     # Discovery nearby heart rate monitors
+    print("Scanning for devices")
     devices = scan_for_devices()
     for dev in devices:
         if dev:
@@ -355,6 +186,8 @@ if __name__ == '__main__':
                 time.sleep(2)
             while connected:
                 print('Doing stuff')
+                x = 6
+                noah_char.write_value(x.to_bytes(1,byteorder='big', signed=False))
                 time.sleep(4)
 
         # Only demo the first device found
