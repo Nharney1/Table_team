@@ -15,7 +15,7 @@ SHOW_IMAGES = True
 def DetectCircles():
 	Ball_list = []
 
-	path = 'C:/Users/UHSgi/Desktop/SD_scripts/cv/input_24.png' # This will need to change, current image is a sample image
+	path = '/home/table_team/Downloads/input_24.png' # This will need to change, current image is a sample image
 	img = cv.imread(path, cv.IMREAD_COLOR)
 
 	# Resize the image, needed for displaying the output image

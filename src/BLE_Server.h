@@ -12,14 +12,14 @@ bool deviceConnected = false;
 
 // Setup callbacks onConnect and onDisconnect
 class MyServerCallbacks: public BLEServerCallbacks {
-    void onConnect(BLEServer* cueServer) {
+    void onConnect(BLEServer* noahServer) {
         Serial.println("Connection established");
         deviceConnected = true;
     }
-    void onDisconnect(BLEServer* cueServer) {
+    void onDisconnect(BLEServer* noahServer) {
         Serial.println("Re-advertising due to disconnect");
         deviceConnected = false;
-        cueServer->startAdvertising(); // restart advertising
+        noahServer->startAdvertising(); // restart advertising
     }
 };
 

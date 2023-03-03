@@ -34,6 +34,8 @@ def on_disconnect(self):
     connected = False
     print( f"The thread is {bt_thread}")
 
+    return 
+
     #Attempt to scan and reconnect
     print("Server disconnected. Sleeping for five seconds, then attemting to reconnect...")
     time.sleep(5)
@@ -163,8 +165,10 @@ def connect_and_run(dev=None, device_address=None):
     except KeyboardInterrupt:
         print("Disconnecting")
 
-    #monitor.disconnect()
-    print('Exiting bluetooth thread!')
+    connected = False
+    monitor.disconnect()
+    monitor.quit()
+
 
 if __name__ == '__main__':
     # Discovery nearby heart rate monitors
@@ -174,21 +178,20 @@ if __name__ == '__main__':
         if dev:
             print("Device Found!")
 
-        # Connect to first available heartrate monitor
         #global bt_thread
         bt_thread = threading.Thread(target=connect_and_run, args=[dev])
         bt_thread.start()
         print( f"The thread is {bt_thread}")
-        #main program loop
         while True:
+            while connected:
+                for i in range(3):
+                    x = 6
+                    noah_char.write_value(x.to_bytes(1,byteorder='big', signed=False))
+                time.sleep(4)
+                prior_connection = True
             while not connected:
                 print("Waiting for connection")
                 time.sleep(2)
-            while connected:
-                print('Doing stuff')
-                x = 6
-                noah_char.write_value(x.to_bytes(1,byteorder='big', signed=False))
-                time.sleep(4)
 
         # Only demo the first device found
-        #break #TODO For now we break after first one
+        #TODO For now we break after first one
