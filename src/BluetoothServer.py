@@ -1,5 +1,4 @@
 import  socket
-i
 
 class BluetoothServerSocket(object):
 	def __init__(self, port):
