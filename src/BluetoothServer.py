@@ -35,3 +35,4 @@ class BluetoothServerSocket(object):
 	def close(self):
 		self.client.close()
 		self.socket.close()
+
