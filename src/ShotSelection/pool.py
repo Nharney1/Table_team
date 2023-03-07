@@ -1,6 +1,4 @@
 from Box2D.Box2D import *
-import json
-import os.path
 import pygame.display
 import pygame.draw
 import pygame.event
@@ -10,7 +8,7 @@ import random
 import threading
 import ai
 from pool_objets import *
-from constants import Bias, Constants, Weights
+from constants import Constants
 import drawable
 
 class Pool:
@@ -21,18 +19,7 @@ class Pool:
 
         if self.graphics:
             pygame.init()
-
-            s_fname = "settings.json"
-            if not os.path.exists(s_fname):
-                with open(s_fname, "w") as file:
-                    json.dump({"width": 1280}, file)
-
-            with open(s_fname, "r") as file:
-                width = int(json.load(file)["width"])
-                Constants.WIDTH = width
-                Constants.HEIGHT = width / Constants.TABLE_RATIO
-
-            self.screen = drawable.ScreenInfo(pygame.display.set_mode((Constants.WIDTH, (Constants.HEIGHT * 9) // 8)), Constants.WIDTH, Constants.HEIGHT, 0, 0, 0)
+            self.screen = drawable.ScreenInfo(pygame.display.set_mode((Constants.WIDTH, Constants.HEIGHT )), Constants.WIDTH, Constants.HEIGHT, 0, 0, 0)
             pygame.display.set_caption("Billiards")
             self.clock = pygame.time.Clock()
 

@@ -2,6 +2,8 @@ from enum import Enum
 import cv2 as cv
 from src.ShotSelection.pool_objets  import Ball as aiBall
 from src.ShotSelection.pool_objets  import CueBall as aiCueBall
+from src.ShotSelection.constants  import Constants
+
 
 
 # Define the minimum and maximum coordinates for the billiard balls
@@ -17,9 +19,9 @@ COLOR_BALL = 140
 
 class BallColor(Enum):
     WHITE = 'white'
-    BLACK = 'white'
+    BLACK = 'black'
     GREEN = 'green'
-    BLUE = ' blue'
+    BLUE = 'blue'
     
 class Ball(object):
     
@@ -69,17 +71,24 @@ class Ball(object):
 
 class BallConvertor:	
     
-    # blue is strips
-    stripe = list(range(1, 8))
-    # green is solids
-    solid = list(range(9, 16))
-    
-    def __init__(self, ppm):
+    def __init__(self, ppm, x_offset, y_offset):
         self.ppm = ppm
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+        self.tilt_x = -11
+        self.tilt_y = -4
+        # blue is stripes
+        self.stripe = list(range(1, 8))
+        # green is solids
+        self.solid = list(range(9, 16))
+    
+        
     
     def convertBall(self, cvBall : Ball):
         
-        pos = self.convertPixelToFeet(cvBall.x, cvBall.y)
+        (pixel_pos_x, pixel_pos_y) = self.tilt_control(cvBall.x, cvBall.y)
+        
+        pos = self.convertPixelToFeet (pixel_pos_x, pixel_pos_y)
 
         if cvBall.color == BallColor.WHITE:
             return aiCueBall(pos)
@@ -98,5 +107,17 @@ class BallConvertor:
         x_feet = x / self.ppm
         y_feet = y / self.ppm
         
+        x_feet += self.x_offset
+        y_feet += self.y_offset
+                
         return (x_feet, y_feet)
-		
+    
+    def tilt_control(self, x_pixels, y_pixels):
+        
+        ratio_h = y_pixels / Constants.HEIGHT 
+        ratio_w = x_pixels / Constants.WIDTH
+        
+        x_pixels += (ratio_w * self.tilt_x)
+        y_pixels += (ratio_h * self.tilt_y)
+        
+        return (x_pixels, y_pixels)

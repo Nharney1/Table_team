@@ -29,7 +29,6 @@ def runSingleTestMode(balls, cueBall, magnitudes, angles, pool_sim: Pool, turn: 
         board = pool_sim.generate_board_from_list(balls, cueBall)
         board.previous_board = board
         if turn is not None: board.turn = turn
-        print("board generated")
         Pool.WORLD.load_board(board)
         Pool.WORLD.board.turn_number = 2
         
@@ -38,14 +37,11 @@ def runSingleTestMode(balls, cueBall, magnitudes, angles, pool_sim: Pool, turn: 
 
         still_frames = 0
         # game loop
-        running = True
         while shots < 2:
             # Check the event queue
             for event in pygame.event.get():
-                if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                    # The user closed the window or pressed escape
-                    running = False
-                elif event.type == VIDEORESIZE:
+            
+                if event.type == VIDEORESIZE:
                     pool_sim.screen.screen_height = event.h
                     pool_sim.screen.screen_width = event.w
                     pool_sim.update_screen()
@@ -72,6 +68,8 @@ def runSingleTestMode(balls, cueBall, magnitudes, angles, pool_sim: Pool, turn: 
                                                                 body_pos_y=body_pos[1]
                                                                 )
                 
+                Pool.WORLD.board.shot = shot.angle
+                Pool.WORLD.board.shot_ready = True
                 pool_sim.update_graphics(graphics)
                 pygame.time.delay(4000)
                 Pool.WORLD.load_board(board)
@@ -87,15 +85,18 @@ def runSingleTestMode(balls, cueBall, magnitudes, angles, pool_sim: Pool, turn: 
                 if still_frames > 3:
                     board = Pool.WORLD.get_board_state()
                     state = board.get_state()
+                    
                     if state == PoolState.ONGOING:
                         simulating = False
                     else:
                         board = pool.generate_normal_board()
                         simulating = False
+                        
                     Pool.WORLD.load_board(board)
                     graphics = Pool.WORLD.get_graphics()
                     
             pool_sim.update_graphics(graphics)
+            
         print("Done!")   
         print(body_pos)
         print(relative_angle)

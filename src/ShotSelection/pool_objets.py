@@ -207,7 +207,7 @@ class Complexity():
         self.prev_pos = [0 for x in range(16)]
         self.pocketed_ball_collisions = []
         self.pocketed_wall_collisions = []
-        self.distance_before_contact = 0
+        self.distance_before_contact = 5
         self.initial_cue_ball_pos = (cue_ball_pos_x, cue_ball_pos_y)
         
 
@@ -269,8 +269,6 @@ class PoolWorld(b2ContactListener):
         super().__init__()
         # Using a deque as a linked list improves performance
         # Due to needing multiple remove() calls
-        print("velocity threshold: " + str(b2_velocityThreshold))
-        #b2.b2_velocityThreshold = 0
         
         
         self.complexity = Complexity()
@@ -312,7 +310,7 @@ class PoolWorld(b2ContactListener):
         bottom_middle = self.pockets[4]
         bottom_right = self.pockets[5]
         
-        thickness = Constants.POCKET_RADIUS
+        thickness = Constants.WALL_THICKNESS
         self.create_boundary_wall(top_left, top_middle, True)
         self.create_boundary_wall(Point(top_middle.x, top_middle.y + 0.1), top_right, True)
         self.create_boundary_wall(top_right, bottom_right, False)
@@ -357,28 +355,28 @@ class PoolWorld(b2ContactListener):
             if ((type1 == PoolType.BALL or type2 == PoolType.BALL) and
                     (type1 == PoolType.WALL or type2 == PoolType.WALL)
                 ):
-                    if type1 == PoolType.BALL:
-                        if (body1.linearVelocity.length < 1.1):
+                    # if type1 == PoolType.BALL:
+                    #     if (body1.linearVelocity.length < 1.1):
                             
-                            if body1.linearVelocity.x < 0:
-                                body1.linearVelocity.x -= 0.1
-                            else:
-                                body1.linearVelocity.x += 0.1
+                    #         if body1.linearVelocity.x < 0:
+                    #             body1.linearVelocity.x -= 0.1
+                    #         else:
+                    #             body1.linearVelocity.x += 0.1
                             
-                            if body1.linearVelocity.y < 0:
-                                body1.linearVelocity.y -= 0.1
-                            else:
-                                body1.linearVelocity.y += 0.1              
-                    else:
-                        if body2.linearVelocity.x < 0:
-                            body2.linearVelocity.x -= 0.1
-                        else:
-                            body2.linearVelocity.x += 0.1
+                    #         if body1.linearVelocity.y < 0:
+                    #             body1.linearVelocity.y -= 0.1
+                    #         else:
+                    #             body1.linearVelocity.y += 0.1              
+                    # else:
+                    #     if body2.linearVelocity.x < 0:
+                    #         body2.linearVelocity.x -= 0.1
+                    #     else:
+                    #         body2.linearVelocity.x += 0.1
                         
-                        if body2.linearVelocity.y < 0:
-                            body2.linearVelocity.y -= 0.1
-                        else:
-                            body2.linearVelocity.y += 0.1
+                    #     if body2.linearVelocity.y < 0:
+                    #         body2.linearVelocity.y -= 0.1
+                    #     else:
+                    #         body2.linearVelocity.y += 0.1
 
                             
                     if type1 == PoolType.BALL and data1.number != 0:
@@ -451,13 +449,13 @@ class PoolWorld(b2ContactListener):
         # https://github.com/agarwl/eight-ball-pool/blob/master/src/dominos.cpp
         ball_fd = b2FixtureDef(shape=b2CircleShape(radius=Constants.BALL_RADIUS))
         ball_fd.density = 1.0
-        ball_fd.restitution = 0.804 
+        ball_fd.restitution = 0.79
         
         
     
         ball:b2Body = self.world.CreateDynamicBody(position=b.position, angle=b.angle, fixtures=ball_fd)
         ball.bullet = True
-        ball.linearDamping = 0.8
+        ball.linearDamping = 0.82
         ball.angularDamping = 100000
         ball.userData = BallData(b.number, False)
         self.balls.append(ball)
@@ -465,8 +463,8 @@ class PoolWorld(b2ContactListener):
 
     def create_boundary_wall(self, pocket1:Point, pocket2:Point, horizontal:bool):
         vertices = []
-        diff = Constants.POCKET_RADIUS + 0.05
-        thickness = Constants.POCKET_RADIUS
+        diff = Constants.POCKET_RADIUS
+        thickness = Constants.WALL_THICKNESS
         if horizontal:
             vertices.append((pocket1.x + diff, pocket1.y))
             vertices.append((pocket2.x - diff, pocket1.y))
@@ -543,16 +541,17 @@ class PoolWorld(b2ContactListener):
         for i in range(6):
             n = i % 3
             if n == 0:
-                x = Constants.POCKET_RADIUS
+                x = Constants.POCKET_RADIUS + Constants.POCKET_WALL_OFFSET
             elif n == 1:
                 x = Constants.TABLE_WIDTH / 2
             else:
-                x = Constants.TABLE_WIDTH - Constants.POCKET_RADIUS
+                x = Constants.TABLE_WIDTH - Constants.POCKET_RADIUS - Constants.POCKET_WALL_OFFSET
             if i == 1:
-                y = Constants.POCKET_RADIUS - 0.1
+                y = Constants.POCKET_RADIUS - 0.1 + Constants.POCKET_WALL_OFFSET
             elif i == 4:
-                y = Constants.TABLE_HEIGHT - Constants.POCKET_RADIUS + 0.1
+                y = Constants.TABLE_HEIGHT - Constants.POCKET_RADIUS + 0.1 - Constants.POCKET_WALL_OFFSET
             else:
-                y = Constants.POCKET_RADIUS if i <= 2 else Constants.TABLE_HEIGHT - Constants.POCKET_RADIUS
+                y = Constants.POCKET_RADIUS + Constants.POCKET_WALL_OFFSET if i <= 2 else Constants.TABLE_HEIGHT - Constants.POCKET_RADIUS - Constants.POCKET_WALL_OFFSET
+            
             pockets.append(Point(x, y))
         return pockets

@@ -80,7 +80,9 @@ def getRelativeAngle(angle, body_pos_x, body_pos_y):
     
     if round(body_pos_x, 2) == round(Constants.TABLE_WIDTH, 2):
         # right wall
-        shooter_angle = angle
+        shooter_angle = angle + 360
+        if shooter_angle >= 360:
+            shooter_angle %= 360
         return shooter_angle * -1
     if round(body_pos_y,2) == 0:
         # top wall

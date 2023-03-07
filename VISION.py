@@ -8,6 +8,7 @@ from src.AnkerCameraLibrary import AnkerCamera
 from src.BluetoothServer import BluetoothServerSocket
 from src.GameState import InvalidBallCount, DetectShot
 from src.Ball import BallConvertor
+from src.ShotSelection.constants import Constants
 
 def main():
 
@@ -26,6 +27,7 @@ def main():
         # Begin computer vision
         # myCam = AnkerCamera(2) # 1 on Jetson Nano; 2 on laptop
         # myCam.take_picture()
+        
         Current_Ball_List = DetectCircles()
   
         # Player 1 is solids and Player 2 is stripes
@@ -37,7 +39,14 @@ def main():
         angles = range(0, 360, 1)
   
         ballsProd = list()
-        convertor = BallConvertor(pool.screen.ppm)
+                
+        ppf = 195
+        
+        x_offset = Constants.WALL_THICKNESS
+        y_offset = Constants.WALL_THICKNESS
+        
+        
+        convertor = BallConvertor(ppf, x_offset, y_offset)
         
         cueBallProd = CueBall((0,0))
         
@@ -48,15 +57,14 @@ def main():
                     cueBallProd = convertedBall
                 else:
                     ballsProd.append(convertedBall)
-                print(ball.color)
-                print(str(ball.x) + " " + str(ball.y))
+        
        
         ShotSelectionTest.runSingleTestMode(
-              balls=ballsProd, 
-                cueBall=cueBallProd, 
-             magnitudes=magnitudes, 
-              angles=angles, 
-               pool_sim=pool, 
+            balls=ballsProd, 
+            cueBall=cueBallProd, 
+            magnitudes=magnitudes, 
+            angles=angles, 
+            pool_sim=pool, 
             turn=playerTurn
           )
             

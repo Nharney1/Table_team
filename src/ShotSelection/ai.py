@@ -191,12 +191,13 @@ class RealisticAI(PoolAI):
             return pool_objets.Shot(180, 50, board.cue_ball.position)
         shots = self.compute_best_shots(board, magnitudes, angles)
         
-       
+        
         i = 0
         shot_complexity : pool_objets.Complexity = shots[i].complexity
         print("Shot total collisions " + str(shot_complexity.total_collisions))
         print("Shot bank shot modifier " + str(shot_complexity.collisions_with_table))
-        
+        if shots[i].board.cue_ball.pocketed:
+            print("cue ball pocketed")
         print(self.compute_shot_heuristic(shots[i].shot, board))
         print("heureistic before " + str(self.compute_heuristic(shots[i].board, board)))
         print("Total heursitic " + str(shots[i].heuristic))
@@ -259,21 +260,24 @@ class RealisticAI(PoolAI):
         if original_board.turn == pool_objets.PoolPlayer.PLAYER1:
             heuristic += (simplicity_heuristic)
             # calc scratches
-            if original_board.first_hit == None:
+            if current_board.cue_ball.pocketed:
+                heuristic -= Weights.POCKET_CUE_BALL
+            if current_board.first_hit == None:
                 heuristic -= Weights.SCRATCH
-            elif original_board.first_hit.number > 7:
+            elif current_board.first_hit.number > 7:
                 heuristic -= Weights.SCRATCH
-            elif original_board.cue_ball.pocketed:
-                heuristic -= Weights.SCRATCH
+            
         else:
             heuristic -= (simplicity_heuristic)
             # calc scratches
-            if original_board.first_hit == None:
+            if current_board.cue_ball.pocketed:
+                heuristic += Weights.POCKET_CUE_BALL
+                
+            if current_board.first_hit == None:
                 heuristic += Weights.SCRATCH
-            elif original_board.first_hit.number < 9:
+            elif current_board.first_hit.number < 9:
                 heuristic += Weights.SCRATCH
-            elif original_board.cue_ball.pocketed:
-                heuristic += Weights.SCRATCH
+            
                 
         if original_board.turn == pool_objets.PoolPlayer.PLAYER2:
             heuristic *= -1.0
