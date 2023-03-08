@@ -1,4 +1,4 @@
-import sys
+from typing import List
 import cv2 as cv 
 import numpy as np
 from .Ball import Ball
@@ -12,7 +12,7 @@ ERROR = 10
 
 SHOW_IMAGES = True
 
-def DetectCircles():
+def DetectCircles() -> List[Ball]:
 	Ball_list = []
 
 	path = '/home/table_team/Downloads/input_24.png' # This will need to change, current image is a sample image
