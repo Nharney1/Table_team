@@ -28,7 +28,7 @@ Put some cool AI stuff here!
 
 ### Arsene Tatke
 <p align="justify">
-Put some cool Bluetooth stuff here! 
+My focus within the project is the user localization system. The system was achieved by using 3 Estimote UWB beacons from the company of the same name together with an app designed from the ground-up using Swift and XCode. The beacons allows for an accuracy in the realm of centimeters crucial for determining the user's position at all times around the pool table. The IOS App designed is configured to record distances to the beacons, averaging out over a defined x amounts of seconds and send the distances via MQTT to an online server. From there, a python code is used on the Jetson to pull the data from the online server. Said code also performs 2D or 3D trilateration based on the predefined positions of the beacons on the pool table, and the distances from user to individual beacons to return x,y position of the user in our choosen coordinate system. Code repeats as needed and information is sent to the user guidance system to direct and correct the user to the ideal position for a shot.
 </p>
 
 ### Noah Harney
