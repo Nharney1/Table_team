@@ -1,3 +1,4 @@
+import os
 from typing import List
 import cv2 as cv 
 import numpy as np
@@ -15,7 +16,8 @@ SHOW_IMAGES = True
 def DetectCircles() -> List[Ball]:
 	Ball_list = []
 
-	path = '/home/table_team/Downloads/input_24.png' # This will need to change, current image is a sample image
+	dirname = os.path.dirname(__file__)
+	path = os.path.join(dirname, 'test_images/input_24.png')
 	img = cv.imread(path, cv.IMREAD_COLOR)
 
 	# Resize the image, needed for displaying the output image
