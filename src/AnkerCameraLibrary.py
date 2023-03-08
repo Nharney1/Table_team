@@ -3,7 +3,7 @@ import cv2, os
 class AnkerCamera(object):
 	def __init__(self, port):
 		self.cam_port = port
-		self.cam = cv2.VideoCapture(self.cam_port, cv2.CAP_DSHOW)
+		self.cam = cv2.VideoCapture(self.cam_port, cv2.CAP_V4L)
 
 
 	def take_picture(self):
@@ -18,7 +18,7 @@ class AnkerCamera(object):
 			print('Cannot capture image')
 		else:
 			cv2.imshow('Sample image', image)
-			cv2.imwrite('C:/Users/UHSgi/Desktop/SD_scripts/cv/input_29.png', image) # Need to change on Jetson Nano
+			cv2.imwrite('/home/table_team/input.png', image) # Need to change on Jetson Nano
 			cv2.waitKey(0)
 
 	def take_video(self):
@@ -31,7 +31,6 @@ class AnkerCamera(object):
 			result, image = self.cam.read()
 			cv2.imshow('video', image)
 			if cv2.waitKey(1) & 0xFF == ord('q'):
-				self.shutdown()
 				break
 
 

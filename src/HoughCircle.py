@@ -2,14 +2,12 @@ import os
 from typing import List
 import cv2 as cv 
 import numpy as np
-from .Ball import Ball
-
-# Define the minimum and maximum coordinates for the billiard balls
-X_MIN = 60
-X_MAX = 1150
-Y_MIN = 25
-Y_MAX = 570
-ERROR = 10
+from .Ball import (Ball,
+				   X_MAX,
+				   Y_MAX,
+				   X_MIN,
+				   Y_MIN,
+				   ERROR)
 
 SHOW_IMAGES = True
 
@@ -17,7 +15,8 @@ def DetectCircles() -> List[Ball]:
 	Ball_list = []
 
 	dirname = os.path.dirname(__file__)
-	path = os.path.join(dirname, 'test_images/input_24.png')
+	path = os.path.join(dirname, 'test_images/input_29.png')
+	#path = '/home/table_team/input.png'
 	img = cv.imread(path, cv.IMREAD_COLOR)
 
 	# Resize the image, needed for displaying the output image
@@ -40,7 +39,7 @@ def DetectCircles() -> List[Ball]:
 	gray_img = cv.cvtColor(resize_img, cv.COLOR_BGR2GRAY)
 
 	dp = 1
-	min_distance = 15
+	min_distance = 20
 	
 	# Make the call to detect circles in image
 	circles = cv.HoughCircles(gray_img, cv.HOUGH_GRADIENT, dp, min_distance, param1 = 30, param2 = 14, minRadius = 15, maxRadius = 25)
