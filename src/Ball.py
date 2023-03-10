@@ -6,7 +6,7 @@ X_MIN = 60
 X_MAX = 1150
 Y_MIN = 25
 Y_MAX = 570
-ERROR = 10
+ERROR = 12
 
 # Color thresholds
 WHITE_BALL = 225
