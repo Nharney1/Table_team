@@ -192,17 +192,17 @@ class RealisticAI(PoolAI):
         shots = self.compute_best_shots(board, magnitudes, angles)
         
         
-        i = 0
-        shot_complexity : pool_objets.Complexity = shots[i].complexity
-        print("Shot total collisions " + str(shot_complexity.total_collisions))
-        print("Shot bank shot modifier " + str(shot_complexity.collisions_with_table))
-        if shots[i].board.cue_ball.pocketed:
-            print("cue ball pocketed")
-        print(self.compute_shot_heuristic(shots[i].shot, board))
-        print("heureistic before " + str(self.compute_heuristic(shots[i].board, board)))
-        print("Total heursitic " + str(shots[i].heuristic))
-        print("distance before contact" + str(shots[i].complexity.distance_before_contact))
-        print("cue ball pocketed: " + str(board.cue_ball.pocketed))
+        # i = 0
+        # shot_complexity : pool_objets.Complexity = shots[i].complexity
+        # print("Shot total collisions " + str(shot_complexity.total_collisions))
+        # print("Shot bank shot modifier " + str(shot_complexity.collisions_with_table))
+        # if shots[i].board.cue_ball.pocketed:
+        #     print("cue ball pocketed")
+        # print(self.compute_shot_heuristic(shots[i].shot, board))
+        # print("heureistic before " + str(self.compute_heuristic(shots[i].board, board)))
+        # print("Total heursitic " + str(shots[i].heuristic))
+        # print("distance before contact" + str(shots[i].complexity.distance_before_contact))
+        # print("cue ball pocketed: " + str(board.cue_ball.pocketed))
 
         return shots[0].shot
 

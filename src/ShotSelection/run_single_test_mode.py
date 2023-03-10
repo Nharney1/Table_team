@@ -1,6 +1,7 @@
 import threading
 import sys
 from os.path import dirname
+from src.ComputedShot import ComputedShot
 
 pydir = dirname(__file__)
 if pydir not in sys.path:
@@ -16,6 +17,7 @@ import pygame.draw
 import pygame.event
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, RESIZABLE, VIDEORESIZE)
 import pygame.time
+
 
 def runSingleTestMode(balls, cueBall, magnitudes, angles, pool_sim: Pool, turn: PoolPlayer = None):
         
@@ -57,7 +59,7 @@ def runSingleTestMode(balls, cueBall, magnitudes, angles, pool_sim: Pool, turn: 
                 ai_thinking = False
                 simulating = True
                 shot, time = shot_queue.pop()
-                finalShot, finalTime = shot, time
+                finalShot : Shot = shot
                 
                 angle = (finalShot.angle + 180) % 360
                 angle *= -1
@@ -67,6 +69,11 @@ def runSingleTestMode(balls, cueBall, magnitudes, angles, pool_sim: Pool, turn: 
                                                                 body_pos_x=body_pos[0],
                                                                 body_pos_y=body_pos[1]
                                                                 )
+                wallNumber = shot_verifier.getWallNum(
+                    body_pos_x=body_pos[0],
+                    body_pos_y=body_pos[1]
+                )
+                force = finalShot.magnitude
                 
                 Pool.WORLD.board.shot = shot.angle
                 Pool.WORLD.board.shot_ready = True
@@ -96,10 +103,19 @@ def runSingleTestMode(balls, cueBall, magnitudes, angles, pool_sim: Pool, turn: 
                     graphics = Pool.WORLD.get_graphics()
                     
             pool_sim.update_graphics(graphics)
-            
+        
+        computedShot : ComputedShot = ComputedShot(
+            playerPos = body_pos,
+            wallNumber = wallNumber,
+            relativeAngle = relative_angle,
+            force=force
+        )
         print("Done!")   
         print(body_pos)
         print(relative_angle)
+        
+        return computedShot
+        
 
 
 
