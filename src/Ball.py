@@ -2,7 +2,7 @@ from enum import Enum
 import cv2 as cv
 
 # Define the minimum and maximum coordinates for the billiard balls
-X_MIN = 60
+X_MIN = 50
 X_MAX = 1150
 Y_MIN = 25
 Y_MAX = 570

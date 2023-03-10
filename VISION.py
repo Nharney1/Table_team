@@ -8,6 +8,7 @@ from src.ShotSelectionHelper import computeShot
 from src import Settings
 
 import time
+import cv2
 
 
 def main():
@@ -18,34 +19,34 @@ def main():
 	Current_Ball_List = None
 	Previous_Ball_List = None
 
+	#Initialize connections
 	Settings.InitializeGlobals()
-	Init_BLE()
+	#Init_BLE()
+	myCam = AnkerCamera(0) # 1 on Jetson Nano; 2 on laptop
+	#pi_bluetooth_socket = BluetoothServerSocket(10) # Port 10 (arbitrary choice)
+	myCam.take_video()
+	cv2.destroyAllWindows()
 	print("Initialization Complete!")
-	time.sleep(5)
 
 	while True:
 		#val = int(input("Enter number:"))
 		#Settings.noah_char.write_value(val.to_bytes(1,byteorder='big', signed=False))
 		#time.sleep(2)
+		for i in range(10):
+			myCam.take_picture()
 
-		# Initialize connections
-		# myCam = AnkerCamera(0) # 1 on Jetson Nano; 2 on laptop
-		# pi_bluetooth_socket = BluetoothServerSocket(10) # Port 10 (arbitrary choice)
-		# myCam.take_video()
-		# myCam.take_picture()
 		Current_Ball_List = DetectCircles()
 		computedShot : ComputedShot = computeShot(Current_Ball_List=Current_Ball_List)
-		break
-			 
-		if Previous_Ball_List is not None:
-			try:
-				ret = DetectShot(Previous_Ball_List, Current_Ball_List)
-				# Need to add shot outcome logic in here
-				print(ret)
 
-			except InvalidBallCount:
-				print("Invalid ball count, something is wrong")
-			break
+		#if Previous_Ball_List is not None:
+			#try:
+				#ret = DetectShot(Previous_Ball_List, Current_Ball_List)
+				# Need to add shot outcome logic in here
+				#print(ret)
+
+			#except InvalidBallCount:
+				#print("Invalid ball count, something is wrong")
+			#break
 		# In here will be the user localization and guidance
 
 		# Below is how to write a byte to the ESP32
@@ -53,9 +54,14 @@ def main():
 
 		# Current shot is complete, store current game state
 		# Current shot is complete, store current game state
-		Previous_Ball_List = Current_Ball_List
+		#Previous_Ball_List = Current_Ball_List
 
-		Startup = False
+		#Startup = False
+
+		for i in range(20):
+			print('Sleeping')
+			time.sleep(1)
+		cv2.destroyAllWindows()
 
 # CLEANUP myCam.shutdown()
 
