@@ -7,8 +7,7 @@ from constants import Constants, Weights, BallColor, Bias
 import drawable
 from collections import deque
 from typing import List, Set, Tuple
-
-
+    
 def random_float(bottom, top):
     return random.random() * (top - bottom) + bottom
 

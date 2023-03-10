@@ -2,8 +2,8 @@
 from enum import IntEnum
 import struct
 
-from bluezero import adapter
-from bluezero import central
+# from bluezero import adapter
+# from bluezero import central
 import threading
 import time
 
