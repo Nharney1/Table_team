@@ -18,10 +18,10 @@ def main():
 	Current_Ball_List = None
 	Previous_Ball_List = None
 
-	Settings.InitializeGlobals()
-	Init_BLE()
-	print("Initialization Complete!")
-	time.sleep(5)
+	# Settings.InitializeGlobals()
+	# Init_BLE()
+	# print("Initialization Complete!")
+	# time.sleep(5)
 
 	while True:
 		#val = int(input("Enter number:"))

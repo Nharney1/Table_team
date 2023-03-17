@@ -66,7 +66,7 @@ def computeShot(Current_Ball_List):
     # Player 1 is solids and Player 2 is stripes
     playerTurn = PoolPlayer.PLAYER1
     pool = Pool(slowMotion=False, graphics=True)
-    magnitudes = [45, 75, 90]
+    magnitudes = [10, 15, 20]
     angles = range(0, 360, 1)
 
     ballsProd = list()

@@ -15,7 +15,7 @@ def DetectCircles() -> List[Ball]:
 	Ball_list = []
 
 	dirname = os.path.dirname(__file__)
-	path = os.path.join(dirname, 'test_images/input_29.png')
+	path = os.path.join(dirname, 'test_images/input_23.png')
 	#path = '/home/table_team/input.png'
 	img = cv.imread(path, cv.IMREAD_COLOR)
 
