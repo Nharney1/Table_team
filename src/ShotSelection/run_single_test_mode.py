@@ -96,7 +96,7 @@ def runSingleTestMode(balls, cueBall, magnitudes, angles, pool_sim: Pool, turn: 
                     if state == PoolState.ONGOING:
                         simulating = False
                     else:
-                        board = pool.generate_normal_board()
+                        board = pool_sim.generate_normal_board()
                         simulating = False
                         
                     Pool.WORLD.load_board(board)

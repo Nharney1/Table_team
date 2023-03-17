@@ -206,7 +206,7 @@ class Complexity():
         self.prev_pos = [0 for x in range(16)]
         self.pocketed_ball_collisions = []
         self.pocketed_wall_collisions = []
-        self.distance_before_contact = 5
+        self.distance_before_contact = 0
         self.initial_cue_ball_pos = (cue_ball_pos_x, cue_ball_pos_y)
         
 
@@ -235,16 +235,22 @@ class Complexity():
         distance = calc_distance(x1, y1, x2, y2)
         self.distance_by_ball[0] += distance
         
-    def compute_complexity_heuristic(self, poolBoard : PoolBoard):
+    def compute_complexity_heuristic(self, firstHit : Ball, poolBoard : PoolBoard):
+        
 
         A = -(self.total_collisions * Weights.TOTAL_COLLISIONS) + Bias.TOTAL_COLLISIONS
         B = -(self.distance_before_contact * Weights.DISTANCE_BEFORE_CONTACT)
+        if firstHit is None:
+            B -= 5
+
         C = -pow(self.collisions_with_table, Weights.WALL_EXPONENT) * Weights.COLLISIONS_WITH_TABLE
+        if firstHit is None and self.collisions_with_table >= 3:
+            C = -Weights.COLLISIONS_WITH_TABLE
         self.calc_collisions_before_pocketed(poolBoard)
         D = -(sum(self.pocketed_ball_collisions) * Weights.POCKETED_BALL_COLLISIONS) + Bias.POCKETED_BALL_COLLISIONS
         E = -(sum( map(lambda x: pow(x, Weights.WALL_EXPONENT), self.pocketed_wall_collisions)) * Weights.POCKETED_WALL_COLLISIONS) + Bias.POCKETED_BALL_COLLISIONS
         self.calc_total_distances(poolBoard)
-        F = -(sum( map(lambda x: x * x, self.distance_by_ball)) * Weights.DISTANCE_PER_BALL)
+        F = -(sum( self.distance_by_ball) * Weights.DISTANCE_PER_BALL)
         return (A + B + C + D + E + F)
    
 def calc_distance(x1, y1, x2, y2):
@@ -355,30 +361,6 @@ class PoolWorld(Box.b2ContactListener):
             if ((type1 == PoolType.BALL or type2 == PoolType.BALL) and
                     (type1 == PoolType.WALL or type2 == PoolType.WALL)
                 ):
-                    # if type1 == PoolType.BALL:
-                    #     if (body1.linearVelocity.length < 1.1):
-                            
-                    #         if body1.linearVelocity.x < 0:
-                    #             body1.linearVelocity.x -= 0.1
-                    #         else:
-                    #             body1.linearVelocity.x += 0.1
-                            
-                    #         if body1.linearVelocity.y < 0:
-                    #             body1.linearVelocity.y -= 0.1
-                    #         else:
-                    #             body1.linearVelocity.y += 0.1              
-                    # else:
-                    #     if body2.linearVelocity.x < 0:
-                    #         body2.linearVelocity.x -= 0.1
-                    #     else:
-                    #         body2.linearVelocity.x += 0.1
-                        
-                    #     if body2.linearVelocity.y < 0:
-                    #         body2.linearVelocity.y -= 0.1
-                    #     else:
-                    #         body2.linearVelocity.y += 0.1
-
-                            
                     if type1 == PoolType.BALL and data1.number != 0:
                         self.complexity.wall_collisions_by_ball[data1.number] += 1
                     elif type2 == PoolType.BALL and data2.number != 0:
@@ -449,7 +431,7 @@ class PoolWorld(Box.b2ContactListener):
         # https://github.com/agarwl/eight-ball-pool/blob/master/src/dominos.cpp
         ball_fd = Box.b2FixtureDef(shape=Box.b2CircleShape(radius=Constants.BALL_RADIUS))
         ball_fd.density = 1.0
-        ball_fd.restitution = 0.79
+        ball_fd.restitution = 0.75
         
         
     
@@ -479,7 +461,7 @@ class PoolWorld(Box.b2ContactListener):
         fixture = Box.b2FixtureDef(shape=Box.b2ChainShape(vertices_chain=vertices))
      
         fixture.density = 1
-        fixture.restitution = 1
+        fixture.restitution = 0.9
   
         body:Box.b2Body = self.world.CreateStaticBody(fixtures=fixture)
         body.userData = PoolData(PoolType.WALL)
