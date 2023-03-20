@@ -283,7 +283,7 @@ if __name__ == "__main__":
     # pool.productionMode()
     # test mode
     pool = Pool(slowMotion=False, graphics=True)
-    magnitudes=[10, 15, 20]
+    magnitudes=[5, 10, 15, 20, 25]
     angles=range(0, 360, 1)
     pool.testMode(magnitudes, angles)
 

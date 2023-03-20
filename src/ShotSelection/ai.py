@@ -177,7 +177,7 @@ class RealisticAI(PoolAI):
                     angle = math.degrees(angle)
                     angle *= -1
                     angle = (angle + 360) % 360
-                    angles.append(angle)
+                    angles.append(round(angle, 2))
             else:
                 if ball.pocketed == False and ball.number > 8 and ball.number < 16:
                     vector2 = (ball.position.x - board.cue_ball.position.x, ball.position.y - board.cue_ball.position.y)
@@ -214,6 +214,7 @@ class RealisticAI(PoolAI):
         print("Total heursitic " + str(shots[i].heuristic))
         print("distance before contact" + str(shots[i].complexity.distance_before_contact))
         print("cue ball pocketed: " + str(board.cue_ball.pocketed))
+        print("angle " + str(shots[i].shot.angle))
 
         return shots[0].shot
 
@@ -231,10 +232,27 @@ class RealisticAI(PoolAI):
         queue : List[ComparableShot] = []
         
         easy_shots : List[float] = self.generate_easy_shots(board)
-               
-        for angle in range(360*4):  
-            angle = angle / 4
-            for magnitude in magnitudes:
+
+        offsets =  [-0.5, -0.35, -0.25, -0.15, -0.1, 0, 0.1, 0.15, 0.25, 0.35, 0.5]
+        for magnitude in magnitudes:
+            for angle in easy_shots:
+                #lower_angle, higher_angle = angle - 0.5, angle + 0.5
+                for val in offsets:
+
+                    shot = pool_objets.Shot(angle + val, magnitude, position)  
+                    
+                    if shot_verifier.verifyShotReachable(shot, board.balls):
+
+                        shot = self.compute_shot_heuristic(shot, board) 
+                        print("Current heureistic" + str(shot.heuristic))
+
+                        if shot.heuristic >= 35:
+                            print("short circuit, good shot found")
+                            return [shot]
+                        heapq.heappush(queue, shot)
+
+        for magnitude in magnitudes:
+            for angle in range(360):     
                 if len(queue) % 50 == 0:
                     print(f"Shots generated: {len(queue)}")
                 shot = pool_objets.Shot(angle, magnitude, position)
@@ -251,7 +269,11 @@ class RealisticAI(PoolAI):
                             break     
                         elif angle > good_shot_lower and angle < good_shot_higher:
                             shot.heuristic += Weights.GOOD_SHOT
-                            break              
+                            break   
+                    if shot.heuristic >= 20:
+                        print("short circuit, good shot found")
+                        return [shot]
+
                     heapq.heappush(queue, shot)
         shots = []
         for _ in range(length):
