@@ -1,4 +1,3 @@
-from Box2D.Box2D import *
 import pygame.display
 import pygame.draw
 import pygame.event
@@ -203,6 +202,7 @@ class Pool:
                     Pool.WORLD.load_board(board)
 
     def testMode(self, magnitudes, angles):
+      
         player1 = ai.RealisticAI(PoolPlayer.PLAYER1, magnitudes, angles)
         player2 = ai.RealisticAI(PoolPlayer.PLAYER2, magnitudes, angles)
         shot_queue = []
@@ -283,7 +283,7 @@ if __name__ == "__main__":
     # pool.productionMode()
     # test mode
     pool = Pool(slowMotion=False, graphics=True)
-    magnitudes=[20, 45, 70]
+    magnitudes=[5, 10, 15, 20, 25]
     angles=range(0, 360, 1)
     pool.testMode(magnitudes, angles)
 

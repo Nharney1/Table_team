@@ -1,8 +1,8 @@
 from enum import IntEnum
 import random
 from typing import List, Tuple
-from Box2D.Box2D import *
 import math
+import Box2D as Box
 from constants import Constants, Weights, BallColor, Bias
 import drawable
 from collections import deque
@@ -36,7 +36,7 @@ class Shot:
 
     def calculate_force(self):
         rads = math.radians(self.angle)
-        return b2Vec2(math.cos(rads) * self.magnitude, math.sin(rads) * self.magnitude)
+        return Box.b2Vec2(math.cos(rads) * self.magnitude, math.sin(rads) * self.magnitude)
 
     def __str__(self):
         return f"Angle: {self.angle} degrees, magnitude: {self.magnitude} N"
@@ -64,7 +64,7 @@ class Ball:
               BallColor.BURGUNDY, BallColor.BLACK]
 
     def __init__(self, position, number, pocketed = False, angle = 0.0):
-        self.position = b2Vec2(position[0], position[1])
+        self.position = Box.b2Vec2(position[0], position[1])
         if number == Constants.CUE_BALL:
             self.color = BallColor.WHITE
         else:
@@ -77,7 +77,7 @@ class Ball:
         return f"Ball {self.number}: [x: {self.position[0]:.3f}, y: {self.position[1]:.3f}], pocketed: {self.pocketed}, color: {self.color}"
 
     @staticmethod
-    def from_b2_body(body : b2Body):
+    def from_b2_body(body : Box.b2Body):
         if body.userData.number == Constants.CUE_BALL:
             return CueBall(body.position, body.userData.pocketed, body.angle)
         else:
@@ -206,7 +206,7 @@ class Complexity():
         self.prev_pos = [0 for x in range(16)]
         self.pocketed_ball_collisions = []
         self.pocketed_wall_collisions = []
-        self.distance_before_contact = 5
+        self.distance_before_contact = 0
         self.initial_cue_ball_pos = (cue_ball_pos_x, cue_ball_pos_y)
         
 
@@ -235,16 +235,22 @@ class Complexity():
         distance = calc_distance(x1, y1, x2, y2)
         self.distance_by_ball[0] += distance
         
-    def compute_complexity_heuristic(self, poolBoard : PoolBoard):
+    def compute_complexity_heuristic(self, firstHit : Ball, poolBoard : PoolBoard):
+        
 
         A = -(self.total_collisions * Weights.TOTAL_COLLISIONS) + Bias.TOTAL_COLLISIONS
         B = -(self.distance_before_contact * Weights.DISTANCE_BEFORE_CONTACT)
+        if firstHit is None:
+            B -= 5
+
         C = -pow(self.collisions_with_table, Weights.WALL_EXPONENT) * Weights.COLLISIONS_WITH_TABLE
+        if firstHit is None and self.collisions_with_table >= 3:
+            C = -Weights.COLLISIONS_WITH_TABLE
         self.calc_collisions_before_pocketed(poolBoard)
         D = -(sum(self.pocketed_ball_collisions) * Weights.POCKETED_BALL_COLLISIONS) + Bias.POCKETED_BALL_COLLISIONS
         E = -(sum( map(lambda x: pow(x, Weights.WALL_EXPONENT), self.pocketed_wall_collisions)) * Weights.POCKETED_WALL_COLLISIONS) + Bias.POCKETED_BALL_COLLISIONS
         self.calc_total_distances(poolBoard)
-        F = -(sum( map(lambda x: x * x, self.distance_by_ball)) * Weights.DISTANCE_PER_BALL)
+        F = -(sum( self.distance_by_ball) * Weights.DISTANCE_PER_BALL)
         return (A + B + C + D + E + F)
    
 def calc_distance(x1, y1, x2, y2):
@@ -262,37 +268,38 @@ class PoolGraphics:
         self.board = board
 
 # This can be used to simulate a given shot constructed from a PoolBoard
-class PoolWorld(b2ContactListener):
+class PoolWorld(Box.b2ContactListener):
 
     def __init__(self):
         super().__init__()
+        Box.b2_velocityThreshold = 0
         # Using a deque as a linked list improves performance
         # Due to needing multiple remove() calls
         
         
         self.complexity = Complexity()
         self.cue_ball_collisions = 0
-        self.balls : deque[b2Body] = deque()
+        self.balls : deque[Box.b2Body] = deque()
         self.pocketed_balls : List[Ball] = []
         self.drawables : List[drawable.Drawable] = []
         self.pockets = PoolWorld.create_pockets()
     
-        self.to_remove : Set[b2Body] = set()
+        self.to_remove : Set[Box.b2Body] = set()
 
         self.board : PoolBoard = None
-        self.cue_ball : b2Body = None
+        self.cue_ball : Box.b2Body = None
 
-        self.world = b2World(gravity=(0, 0), doSleep=True)
+        self.world = Box.b2World(gravity=(0, 0), doSleep=True)
         self.world.autoClearForces = True
         self.world.contactListener = self
         
         # Create the pocket fixtures which are sensors
         # The radius is such that a collision only occurs when the center of the ball
         # overlaps with the edge of the pocket
-        pocket_fd = b2FixtureDef(shape=b2CircleShape(radius=Constants.POCKET_RADIUS - Constants.BALL_RADIUS))
+        pocket_fd = Box.b2FixtureDef(shape=Box.b2CircleShape(radius=Constants.POCKET_RADIUS - Constants.BALL_RADIUS))
         pocket_fd.isSensor = True
         for pocket in self.pockets:
-            body:b2Body = self.world.CreateStaticBody(
+            body: Box.b2Body = self.world.CreateStaticBody(
                 position=pocket.to_tuple(),
                 fixtures=pocket_fd
             )
@@ -317,10 +324,10 @@ class PoolWorld(b2ContactListener):
         self.create_boundary_wall(Point(bottom_left.x, bottom_left.y + thickness), Point(bottom_middle.x, bottom_middle.y + thickness), True)
         self.create_boundary_wall(Point(bottom_middle.x, bottom_middle.y + thickness - 0.1), Point(bottom_right.x, bottom_right.y + thickness), True)
 
-    def BeginContact(self, contact:b2Contact):
+    def BeginContact(self, contact:Box.b2Contact):
         
-        body1 : b2Body = contact.fixtureA.body
-        body2 : b2Body = contact.fixtureB.body
+        body1 : Box.b2Body = contact.fixtureA.body
+        body2 : Box.b2Body = contact.fixtureB.body
         data1 : BallData = body1.userData
         data2 : BallData = body2.userData
         type1 = data1.type
@@ -354,30 +361,6 @@ class PoolWorld(b2ContactListener):
             if ((type1 == PoolType.BALL or type2 == PoolType.BALL) and
                     (type1 == PoolType.WALL or type2 == PoolType.WALL)
                 ):
-                    # if type1 == PoolType.BALL:
-                    #     if (body1.linearVelocity.length < 1.1):
-                            
-                    #         if body1.linearVelocity.x < 0:
-                    #             body1.linearVelocity.x -= 0.1
-                    #         else:
-                    #             body1.linearVelocity.x += 0.1
-                            
-                    #         if body1.linearVelocity.y < 0:
-                    #             body1.linearVelocity.y -= 0.1
-                    #         else:
-                    #             body1.linearVelocity.y += 0.1              
-                    # else:
-                    #     if body2.linearVelocity.x < 0:
-                    #         body2.linearVelocity.x -= 0.1
-                    #     else:
-                    #         body2.linearVelocity.x += 0.1
-                        
-                    #     if body2.linearVelocity.y < 0:
-                    #         body2.linearVelocity.y -= 0.1
-                    #     else:
-                    #         body2.linearVelocity.y += 0.1
-
-                            
                     if type1 == PoolType.BALL and data1.number != 0:
                         self.complexity.wall_collisions_by_ball[data1.number] += 1
                     elif type2 == PoolType.BALL and data2.number != 0:
@@ -443,18 +426,18 @@ class PoolWorld(b2ContactListener):
             self.pocketed_balls.remove(self.board.cue_ball)
         self.cue_ball.ApplyForce(shot.calculate_force(), self.cue_ball.localCenter, True)
 
-    def create_ball(self, b:Ball) -> b2Body:
+    def create_ball(self, b:Ball) -> Box.b2Body:
         # constants taken from here:
         # https://github.com/agarwl/eight-ball-pool/blob/master/src/dominos.cpp
-        ball_fd = b2FixtureDef(shape=b2CircleShape(radius=Constants.BALL_RADIUS))
+        ball_fd = Box.b2FixtureDef(shape=Box.b2CircleShape(radius=Constants.BALL_RADIUS))
         ball_fd.density = 1.0
-        ball_fd.restitution = 0.79
+        ball_fd.restitution = 0.75
         
         
     
-        ball:b2Body = self.world.CreateDynamicBody(position=b.position, angle=b.angle, fixtures=ball_fd)
+        ball: Box.b2Body = self.world.CreateDynamicBody(position=b.position, angle=b.angle, fixtures=ball_fd)
         ball.bullet = True
-        ball.linearDamping = 0.82
+        ball.linearDamping = 0.9
         ball.angularDamping = 100000
         ball.userData = BallData(b.number, False)
         self.balls.append(ball)
@@ -475,12 +458,12 @@ class PoolWorld(b2ContactListener):
             vertices.append((pocket1.x + thickness, pocket2.y - diff))
             vertices.append((pocket1.x + thickness, pocket1.y + diff))
         vertices.append(vertices[0])
-        fixture = b2FixtureDef(shape=b2ChainShape(vertices_chain=vertices))
+        fixture = Box.b2FixtureDef(shape=Box.b2ChainShape(vertices_chain=vertices))
      
         fixture.density = 1
-        fixture.restitution = 1
+        fixture.restitution = 0.9
   
-        body:b2Body = self.world.CreateStaticBody(fixtures=fixture)
+        body:Box.b2Body = self.world.CreateStaticBody(fixtures=fixture)
         body.userData = PoolData(PoolType.WALL)
         self.drawables.append(drawable.Drawable(body, 
                                                 BallColor.BROWN, 

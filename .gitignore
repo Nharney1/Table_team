@@ -26,6 +26,17 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# pybox2d
+src/pybox2d/build/*
+src/pybox2d/dist/*
+*.py[oc]
+*.swo
+*.swp
+*.so
+src/pybox2d/Box2D.py
+src/pybox2d/_Box2D.pyd
+
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
