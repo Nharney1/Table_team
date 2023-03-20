@@ -15,8 +15,9 @@ def DetectCircles() -> List[Ball]:
 	Ball_list = []
 
 	dirname = os.path.dirname(__file__)
-	path = os.path.join(dirname, 'test_images/input_23.png')
-	#path = '/home/table_team/input.png'
+
+	#path = os.path.join(dirname, 'test_images/input_29.png')
+	path = '/home/table_team/input.png'
 	img = cv.imread(path, cv.IMREAD_COLOR)
 
 	# Resize the image, needed for displaying the output image
@@ -33,13 +34,14 @@ def DetectCircles() -> List[Ball]:
 		cv.circle(resize_img, (X_MIN, Y_MIN), 5, (255,0,0,), 5)
 		cv.circle(resize_img, (X_MAX,Y_MAX), 5, (255,0,0,), 5) 
 		cv.imshow('balls', resize_img) 
-		cv.waitKey(0) 
+		cv.waitKey(0)
+		#cv.destroyAllWindows()
 
 	# Convert to grayscale for the Hough Circle Transform
 	gray_img = cv.cvtColor(resize_img, cv.COLOR_BGR2GRAY)
 
 	dp = 1
-	min_distance = 20
+	min_distance = 40
 	
 	# Make the call to detect circles in image
 	circles = cv.HoughCircles(gray_img, cv.HOUGH_GRADIENT, dp, min_distance, param1 = 30, param2 = 14, minRadius = 15, maxRadius = 25)
@@ -70,5 +72,7 @@ def DetectCircles() -> List[Ball]:
 			if SHOW_IMAGES: 
 				cv.imshow('balls', resize_img)
 				cv.waitKey(0)
+
+		cv.destroyAllWindows()
 
 		return Ball_list

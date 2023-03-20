@@ -17,7 +17,6 @@ class AnkerCamera(object):
 		if not result:
 			print('Cannot capture image')
 		else:
-			cv2.imshow('Sample image', image)
 			cv2.imwrite('/home/table_team/input.png', image) # Need to change on Jetson Nano
 			cv2.waitKey(0)
 
