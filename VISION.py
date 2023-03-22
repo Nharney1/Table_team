@@ -23,10 +23,11 @@ def on_connect(mqttc, obj, flags, rc):
     	print("rc: "+str(rc))
 
 def on_message(mqttc, obj, msg):
-	msg = str(msg.payload.decode("utf-8")) #messages received are printed from here
-	if msg == 'start':
+	global actionsignal
+	receivedmsg = str(msg.payload.decode("utf-8")) #messages received are printed from here
+	if receivedmsg == 'start':
 		actionsignal = True
-	if msg == 'stop':
+	if receivedmsg == 'stop':
 		actionsignal = True
 
 def on_publish(mqttc, obj, mid):
@@ -79,6 +80,7 @@ def main():
 		Current_Ball_List = DetectCircles()
 		computedShot : ComputedShot = computeShot(Current_Ball_List=Current_Ball_List)
 		
+		global actionsignal
 		if actionsignal:
 			with open('targetposition.csv', 'w') as f:
 			    writer = csv.writer(f)
