@@ -84,8 +84,10 @@ def on_connect(mqttc, obj, flags, rc):
 
 xarray = []
 yarray = []
+actionsignal = False
 
 def on_message(mqttc, obj, msg):
+    global actionsignal
     #print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
     if msg.topic == "t/sd/uwb":
       uwbdist = json.loads(msg.payload.decode("utf-8"))["dist"]
@@ -133,10 +135,11 @@ def on_message(mqttc, obj, msg):
       print("After smoothing in feet", arraydistfeet)
       
       if actionsignal:
-        with open('userposition.csv', 'w') as f:
+        with open('userposition.csv', 'a') as f:
             writer = csv.writer(f)
             writer.writerow([x,y])	
-      
+
+    
     if msg.topic == "t/sd/vision":  
       msg = str(msg.payload.decode("utf-8")) #messages received are printed from here
       if msg == 'start':
