@@ -28,7 +28,7 @@ def on_message(mqttc, obj, msg):
 	if receivedmsg == 'start':
 		actionsignal = True
 	if receivedmsg == 'stop':
-		actionsignal = True
+		actionsignal = False
 
 def on_publish(mqttc, obj, mid):
 	print("mid: "+str(mid))
