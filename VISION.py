@@ -82,7 +82,7 @@ def main():
 		
 		global actionsignal
 		if actionsignal:
-			with open('targetposition.csv', 'w') as f:
+			with open('targetposition.csv', 'a') as f:
 			    writer = csv.writer(f)
 			    writer.writerow([computedShot.playerPos[0], computedShot.playerpos[1]])			
 			
