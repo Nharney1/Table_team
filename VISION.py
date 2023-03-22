@@ -9,6 +9,46 @@ from src import Settings
 
 import time
 import cv2
+import sys
+import json
+import paho.mqtt.client as mqtt
+import csv
+import time
+import numpy as np 
+import math
+
+actionsignal = False
+
+def on_connect(mqttc, obj, flags, rc):
+    	print("rc: "+str(rc))
+
+def on_message(mqttc, obj, msg):
+	msg = str(msg.payload.decode("utf-8")) #messages received are printed from here
+	if msg == 'start':
+		actionsignal = True
+	if msg == 'stop':
+		actionsignal = True
+
+def on_publish(mqttc, obj, mid):
+	print("mid: "+str(mid))
+
+def on_subscribe(mqttc, obj, mid, granted_qos):
+	print("Subscribed: "+str(mid)+" "+str(granted_qos))
+
+def on_log(mqttc, obj, level, string):
+	print(string)
+    
+#time.sleep(10)
+mqttc = mqtt.Client(transport='websockets')   
+mqttc.on_message = on_message
+mqttc.on_connect = on_connect
+mqttc.on_publish = on_publish
+mqttc.on_subscribe = on_subscribe
+mqttc.connect('broker.emqx.io', 8083, 60)
+mqttc.subscribe("t/sd/vision", 0)
+#mqttc.subscribe("$SYS/#", 0)
+#ret= mqttc.publish("t/sd/scratch","start") #use this line to send
+mqttc.loop_forever()
 
 
 def main():
@@ -38,7 +78,12 @@ def main():
 
 		Current_Ball_List = DetectCircles()
 		computedShot : ComputedShot = computeShot(Current_Ball_List=Current_Ball_List)
-
+		
+		if actionsignal:
+			with open('targetposition.csv', 'w') as f:
+			    writer = csv.writer(f)
+			    writer.writerow([computedShot.playerPos[0], computedShot.playerpos[1]])			
+			
 		#if Previous_Ball_List is not None:
 			#try:
 				#ret = DetectShot(Previous_Ball_List, Current_Ball_List)
