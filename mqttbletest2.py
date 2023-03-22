@@ -87,51 +87,63 @@ yarray = []
 
 def on_message(mqttc, obj, msg):
     #print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
-    uwbdist = json.loads(msg.payload.decode("utf-8"))["dist"]
-    print("Distances from beacons", uwbdist)
-    r1 = abs(float(uwbdist.split(",")[0])) #LEMON
-    r2 = abs(float(uwbdist.split(",")[1])) #COCONUT
-    r3 = abs(float(uwbdist.split(",")[2])) #CARAMEL
-    x1 = 0
-    y1 = 0
-    z1 = 0.762
-    x2 = 1.9304 #76"
-    y2 = 0
-    z2 = 0.762
-    x3 = 0.9779 #38.5"
-    y3 = 1.0287#40.5"
-    z3 = 0.762
-    global xarray
-    global yarray
+    if msg.topic == "t/sd/uwb":
+      uwbdist = json.loads(msg.payload.decode("utf-8"))["dist"]
+      print("Distances from beacons", uwbdist)
+      r1 = abs(float(uwbdist.split(",")[0])) #LEMON
+      r2 = abs(float(uwbdist.split(",")[1])) #COCONUT
+      r3 = abs(float(uwbdist.split(",")[2])) #CARAMEL
+      x1 = 0
+      y1 = 0
+      z1 = 0.762
+      x2 = 1.9304 #76"
+      y2 = 0
+      z2 = 0.762
+      x3 = 0.9779 #38.5"
+      y3 = 1.0287#40.5"
+      z3 = 0.762
+      global xarray
+      global yarray
 
-    x,y = trilateration(x1,y1,r1,x2,y2,r2,x3,y3,r3)
-    #x,y = trilateration3D(x1,y1,z1,r1,x2,y2,z2,r2,x3,y3,z3,r3)
-    #print(x,y)
-    if len(xarray) > 5:
-        xarray = []
-    if len(yarray) > 5:
-        yarray = []
+      x,y = trilateration(x1,y1,r1,x2,y2,r2,x3,y3,r3)
+      #x,y = trilateration3D(x1,y1,z1,r1,x2,y2,z2,r2,x3,y3,z3,r3)
+      #print(x,y)
+      if len(xarray) > 5:
+          xarray = []
+      if len(yarray) > 5:
+          yarray = []
 
-    if xarray == []:
-        xarray.append(x)
-    if yarray == []:
-        yarray.append(y)
-    
+      if xarray == []:
+          xarray.append(x)
+      if yarray == []:
+          yarray.append(y)
 
-    if abs(x - np.mean(xarray)) < 0.61:
-        xarray.append(x)
-    if abs(y - np.mean(yarray)) < 0.61:
-        yarray.append(y)
 
-    x = xarray[len(xarray)-1]
-    y = yarray[len(yarray)-1]
-    print("Before smoothing in meters", [x,y])
-    arraydist = smoothpoint(x,y)
-    arraydistfeet = [r*3.28084 for r in arraydist]
-    print("After smoothing in meters", arraydist)
-    print("After smoothing in feet", arraydistfeet)
+      if abs(x - np.mean(xarray)) < 0.61:
+          xarray.append(x)
+      if abs(y - np.mean(yarray)) < 0.61:
+          yarray.append(y)
 
-    return arraydistfeet
+      x = xarray[len(xarray)-1]
+      y = yarray[len(yarray)-1]
+      print("Before smoothing in meters", [x,y])
+      arraydist = smoothpoint(x,y)
+      arraydistfeet = [r*3.28084 for r in arraydist]
+      print("After smoothing in meters", arraydist)
+      print("After smoothing in feet", arraydistfeet)
+      
+      if actionsignal:
+        with open('userposition.csv', 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow([x,y])	
+      
+    if msg.topic == "t/sd/vision":  
+      msg = str(msg.payload.decode("utf-8")) #messages received are printed from here
+      if msg == 'start':
+        actionsignal = True
+      if msg == 'stop':
+        actionsignal = True
+
                
 def on_publish(mqttc, obj, mid):
     print("mid: "+str(mid))
@@ -151,6 +163,7 @@ mqttc.on_subscribe = on_subscribe
 
 mqttc.connect('broker.emqx.io', 8083, 60)
 mqttc.subscribe("t/sd/uwb", 0)
+mqttc.subscribe("t/sd/vision", 0)
 #mqttc.subscribe("$SYS/#", 0)
-ret= mqttc.publish("t/sd/feedback","L")                   #publish
+#ret= mqttc.publish("t/sd/feedback","L")                   #publish
 mqttc.loop_forever()
