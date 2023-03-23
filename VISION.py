@@ -5,6 +5,8 @@ from src.BluetoothServer import BluetoothServerSocket
 from src.GameState import InvalidBallCount, DetectShot
 from src.BLE_Testing import Init_BLE
 from src.ShotSelectionHelper import computeShot
+from src.Speakers import DetermineNextSpeaker
+
 from src import Settings
 
 import time
