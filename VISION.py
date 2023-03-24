@@ -63,6 +63,7 @@ def main():
 		temp_current_position = None
 		Settings.MQTT_Lock.acquire()
 		temp_current_position = Settings.MQTT_Location
+		print(temp_current_position)
 		Settings.MQTT_Lock.release()
 		
 		# Below is how to write a byte to the ESP32
