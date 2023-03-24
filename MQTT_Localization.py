@@ -145,7 +145,7 @@ def on_log(mqttc, obj, level, string):
 
 #time.sleep(10)
 
-def MQTT_main():
+def MQTT_Main():
 	Settings.InitializeGlobals()
 	mqttc = mqtt.Client(transport='websockets')   
 	mqttc.on_message = on_message
