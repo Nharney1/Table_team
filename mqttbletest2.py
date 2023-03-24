@@ -5,6 +5,7 @@ import csv
 import time
 import numpy as np 
 import math
+from src import Settings
 
 def trilateration(x1,y1,r1,x2,y2,r2,x3,y3,r3): #Based on https://www.101computing.net/cell-phone-trilateration-algorithm/
   A = 2*x2 - 2*x1
@@ -84,10 +85,8 @@ def on_connect(mqttc, obj, flags, rc):
 
 xarray = []
 yarray = []
-actionsignal = False
 
 def on_message(mqttc, obj, msg):
-    global actionsignal
     #print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
     if msg.topic == "t/sd/uwb":
       uwbdist = json.loads(msg.payload.decode("utf-8"))["dist"]
@@ -128,24 +127,13 @@ def on_message(mqttc, obj, msg):
 
       x = xarray[len(xarray)-1]
       y = yarray[len(yarray)-1]
-      print("Before smoothing in meters", [x,y])
-      arraydist = smoothpoint(x,y)
-      arraydistfeet = [r*3.28084 for r in arraydist]
-      print("After smoothing in meters", arraydist)
-      print("After smoothing in feet", arraydistfeet)
+      #print("Before smoothing in meters", [x,y])
+      arraydist = round(smoothpoint(x,y),2)
+      arraydistfeet = round([r*3.28084 for r in arraydist],2)
+      #print("After smoothing in meters", arraydist)
+      #print("After smoothing in feet", arraydistfeet)
+      MQTT_Location = arraydistfeet
       
-      if actionsignal:
-        with open('userposition.csv', 'a') as f:
-            writer = csv.writer(f)
-            writer.writerow([x,y])	
-
-    
-    if msg.topic == "t/sd/vision":  
-      msg = str(msg.payload.decode("utf-8")) #messages received are printed from here
-      if msg == 'start':
-        actionsignal = True
-      if msg == 'stop':
-        actionsignal = True
 
                
 def on_publish(mqttc, obj, mid):
@@ -158,15 +146,18 @@ def on_log(mqttc, obj, level, string):
     print(string)
     
 #time.sleep(10)
-mqttc = mqtt.Client(transport='websockets')   
-mqttc.on_message = on_message
-mqttc.on_connect = on_connect
-mqttc.on_publish = on_publish
-mqttc.on_subscribe = on_subscribe
 
-mqttc.connect('broker.emqx.io', 8083, 60)
-mqttc.subscribe("t/sd/uwb", 0)
-mqttc.subscribe("t/sd/vision", 0)
-#mqttc.subscribe("$SYS/#", 0)
-#ret= mqttc.publish("t/sd/feedback","L")                   #publish
-mqttc.loop_forever()
+def MQTT_main():
+	Settings.InitializeGlobals()
+  mqttc = mqtt.Client(transport='websockets')   
+  mqttc.on_message = on_message
+  mqttc.on_connect = on_connect
+  mqttc.on_publish = on_publish
+  mqttc.on_subscribe = on_subscribe
+
+  mqttc.connect('broker.emqx.io', 8083, 60)
+  mqttc.subscribe("t/sd/uwb", 0)
+  mqttc.subscribe("t/sd/vision", 0)
+  #mqttc.subscribe("$SYS/#", 0)
+  #ret= mqttc.publish("t/sd/feedback","L")                   #publish
+  mqttc.loop_forever()
