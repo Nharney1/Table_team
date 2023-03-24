@@ -6,6 +6,7 @@ from src.GameState import InvalidBallCount, DetectShot
 from src.BLE_Testing import Init_BLE
 from src.ShotSelectionHelper import computeShot
 from src import Settings
+from src.MQTT_Localization import MQTT_Main
 
 import time
 import cv2
@@ -16,41 +17,7 @@ import csv
 import time
 import numpy as np 
 import math
-
-actionsignal = False
-
-def on_connect(mqttc, obj, flags, rc):
-    	print("rc: "+str(rc))
-
-def on_message(mqttc, obj, msg):
-	global actionsignal
-	receivedmsg = str(msg.payload.decode("utf-8")) #messages received are printed from here
-	if receivedmsg == 'start':
-		actionsignal = True
-	if receivedmsg == 'stop':
-		actionsignal = False
-
-def on_publish(mqttc, obj, mid):
-	print("mid: "+str(mid))
-
-def on_subscribe(mqttc, obj, mid, granted_qos):
-	print("Subscribed: "+str(mid)+" "+str(granted_qos))
-
-def on_log(mqttc, obj, level, string):
-	print(string)
-    
-#time.sleep(10)
-mqttc = mqtt.Client(transport='websockets')   
-mqttc.on_message = on_message
-mqttc.on_connect = on_connect
-mqttc.on_publish = on_publish
-mqttc.on_subscribe = on_subscribe
-mqttc.connect('broker.emqx.io', 8083, 60)
-mqttc.subscribe("t/sd/vision", 0)
-#mqttc.subscribe("$SYS/#", 0)
-#ret= mqttc.publish("t/sd/scratch","start") #use this line to send
-mqttc.loop_forever()
-
+import threading
 
 def main():
 
@@ -59,7 +26,7 @@ def main():
 	Continue = False
 	Current_Ball_List = None
 	Previous_Ball_List = None
-
+	
 
 	#Initialize connections
 	Settings.InitializeGlobals()
@@ -68,6 +35,8 @@ def main():
 	#pi_bluetooth_socket = BluetoothServerSocket(10) # Port 10 (arbitrary choice)
 	#myCam.take_video()
 	#cv2.destroyAllWindows()
+	MQTT_Thread = threading.Thread(target = MQTT_Main)
+	MQTT_Thread.start()
 	print("Initialization Complete!")
 
 	while True:
@@ -78,13 +47,7 @@ def main():
 		#	myCam.take_picture()
 
 		Current_Ball_List = DetectCircles()
-		computedShot : ComputedShot = computeShot(Current_Ball_List=Current_Ball_List)
-		
-		global actionsignal
-		if actionsignal:
-			with open('targetposition.csv', 'a') as f:
-			    writer = csv.writer(f)
-			    writer.writerow([computedShot.playerPos[0], computedShot.playerpos[1]])			
+		computedShot : ComputedShot = computeShot(Current_Ball_List=Current_Ball_List)			
 			
 		#if Previous_Ball_List is not None:
 			#try:
@@ -97,6 +60,11 @@ def main():
 			#break
 		# In here will be the user localization and guidance
 
+		temp_current_position = None
+		Settings.MQTT_Lock.acquire()
+		temp_current_position = Settings.MQTT_Location
+		Settings.MQTT_Lock.release()
+		
 		# Below is how to write a byte to the ESP32
 		# Settings.noah_char.write_value(val.to_bytes(1,byteorder='big', signed=False))
 
