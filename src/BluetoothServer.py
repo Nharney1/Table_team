@@ -17,6 +17,7 @@ class BluetoothServerSocket(object):
 		self.socket.listen(self.backlog)
 		try:
 			self.client, self.clientAddress = self.socket.accept()
+			print("Connection established")
 		except:
 			print("Unable to establish bluetooth socket connection")
 			self.client.close()
