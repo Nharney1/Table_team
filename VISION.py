@@ -10,13 +10,6 @@ from src.MQTT_Localization import MQTT_Main
 
 import time
 import cv2
-import sys
-import json
-import paho.mqtt.client as mqtt
-import csv
-import time
-import numpy as np 
-import math
 import threading
 
 def main():
@@ -26,6 +19,7 @@ def main():
 	Continue = False
 	Current_Ball_List = None
 	Previous_Ball_List = None
+	temp_current_position = None
 	
 
 	#Initialize connections
@@ -46,8 +40,9 @@ def main():
 		#for i in range(10):
 		#	myCam.take_picture()
 
-		Current_Ball_List = DetectCircles()
-		computedShot : ComputedShot = computeShot(Current_Ball_List=Current_Ball_List)			
+		#Current_Ball_List = DetectCircles()
+		#computedShot : ComputedShot = computeShot(Current_Ball_List=Current_Ball_List)
+		
 			
 		#if Previous_Ball_List is not None:
 			#try:
@@ -60,7 +55,9 @@ def main():
 			#break
 		# In here will be the user localization and guidance
 
-		temp_current_position = None
+		print("VISION sleeping")
+		time.sleep(1)
+
 		Settings.MQTT_Lock.acquire()
 		temp_current_position = Settings.MQTT_Location
 		print(temp_current_position)
@@ -75,10 +72,10 @@ def main():
 
 		#Startup = False
 
-		for i in range(20):
-			print('Sleeping')
-			time.sleep(1)
-		cv2.destroyAllWindows()
+		#for i in range(20):
+			#print('Sleeping')
+			#time.sleep(1)
+		#cv2.destroyAllWindows()
 
 # CLEANUP myCam.shutdown()
 

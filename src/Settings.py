@@ -11,11 +11,11 @@ def InitializeGlobals():
 	global MQTT_Lock
 
 	connected = False
-	monitor = None #This is a temporary name for the client/Central object
+	monitor = None # This is a temporary name for the client/Central object
 	bt_thread = None
 	notification_cb_set = False
 	noah_char = None
 	pause = False
 	MQTT_Location = None
-	MQTT_Lock = threading.lock()
+	MQTT_Lock = threading.Lock()
 	print("GLOBALS DONE")

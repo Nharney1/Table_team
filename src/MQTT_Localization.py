@@ -1,13 +1,13 @@
 import sys
 import json
-import paho.mqtt.client as mqtt
-import csv
-import time
-import numpy as np 
 import math
-from src import Settings
 
-def trilateration(x1,y1,r1,x2,y2,r2,x3,y3,r3): #Based on https://www.101computing.net/cell-phone-trilateration-algorithm/
+import paho.mqtt.client as mqtt
+import numpy as np 
+
+from . import Settings
+
+def trilateration(x1,y1,r1,x2,y2,r2,x3,y3,r3): # Based on https://www.101computing.net/cell-phone-trilateration-algorithm/
 	A = 2*x2 - 2*x1
 	B = 2*y2 - 2*y1
 	C = r1**2 - r2**2 - x1**2 + x2**2 - y1**2 + y2**2
@@ -57,7 +57,7 @@ def smoothpoint(x,y):
 	bottomedge = [x, 1.0287]
 	edges = [leftedge, topedge, rightedge, bottomedge]
 
-	disttoedges = [math.dist(edge, computedpoint) for edge in edges]
+	disttoedges = [math.hypot(edge[1] - computedpoint[1], edge[0] - computedpoint[0]) for edge in edges]
 	indexmindist = disttoedges.index(min(disttoedges))
 	if indexmindist == 0:
 		smoothedpoint = [0, min(max(y,0),1.0287)]
@@ -89,9 +89,9 @@ def on_message(mqttc, obj, msg):
 	if msg.topic == "t/sd/uwb":
 		uwbdist = json.loads(msg.payload.decode("utf-8"))["dist"]
 		#print("Distances from beacons", uwbdist)
-		r1 = abs(float(uwbdist.split(",")[0])) #LEMON
-		r2 = abs(float(uwbdist.split(",")[1])) #COCONUT
-		r3 = abs(float(uwbdist.split(",")[2])) #CARAMEL
+		r1 = abs(float(uwbdist.split(",")[0])) # LEMON
+		r2 = abs(float(uwbdist.split(",")[1])) # COCONUT
+		r3 = abs(float(uwbdist.split(",")[2])) # CARAMEL
 		x1 = 0
 		y1 = 0
 		z1 = 0.762
@@ -126,12 +126,14 @@ def on_message(mqttc, obj, msg):
 		x = xarray[len(xarray)-1]
 		y = yarray[len(yarray)-1]
 		#print("Before smoothing in meters", [x,y])
-		arraydist = round(smoothpoint(x,y),2)
-		arraydistfeet = round([r*3.28084 for r in arraydist],2)
+		arraydist = np.round(smoothpoint(x,y),2)
+		arraydistfeet = np.round([r*3.28084 for r in arraydist],2)
 		#print("After smoothing in meters", arraydist)
 		#print("After smoothing in feet", arraydistfeet)
-		MQTT_Location = arraydistfeet
 
+		Settings.MQTT_Lock.acquire()
+		Settings.MQTT_Location = arraydistfeet
+		Settings.MQTT_Lock.release()
 
 
 def on_publish(mqttc, obj, mid):
@@ -143,10 +145,8 @@ def on_subscribe(mqttc, obj, mid, granted_qos):
 def on_log(mqttc, obj, level, string):
 	print(string)
 
-#time.sleep(10)
-
 def MQTT_Main():
-	Settings.InitializeGlobals()
+	print("Starting MQTT thread")
 	mqttc = mqtt.Client(transport='websockets')   
 	mqttc.on_message = on_message
 	mqttc.on_connect = on_connect
