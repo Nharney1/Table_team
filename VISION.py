@@ -11,6 +11,7 @@ from src.MQTT_Localization import MQTT_Main
 import time
 import cv2
 import threading
+import paho.mqtt.client as mqtt
 
 def main():
 
@@ -29,6 +30,9 @@ def main():
 	#pi_bluetooth_socket = BluetoothServerSocket(10) # Port 10 (arbitrary choice)
 	#myCam.take_video()
 	#cv2.destroyAllWindows()
+	mqttc = mqtt.Client(transport='websockets')   
+	mqttc.connect('broker.emqx.io', 8083, 60)
+	mqttc.subscribe("t/sd/feedback", 0)
 	MQTT_Thread = threading.Thread(target = MQTT_Main)
 	MQTT_Thread.start()
 	print("Initialization Complete!")
@@ -72,6 +76,8 @@ def main():
 
 		#Startup = False
 
+		shot_result_feedback = 0
+		ret= mqttc.publish("t/sd/feedback",shot_result_feedback)   
 		#for i in range(20):
 			#print('Sleeping')
 			#time.sleep(1)
