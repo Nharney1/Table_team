@@ -7,7 +7,7 @@ from constants import Constants, Weights, BallColor, Bias
 import drawable
 from collections import deque
 from typing import List, Set, Tuple
-    
+
 def random_float(bottom, top):
     return random.random() * (top - bottom) + bottom
 
@@ -537,3 +537,18 @@ class PoolWorld(Box.b2ContactListener):
             
             pockets.append(Point(x, y))
         return pockets
+
+
+class ComparableShot:
+
+    def __init__(self, shot : Shot, heuristic : float, board : PoolBoard, complexity : Complexity = Complexity()):
+        self.shot = shot
+        self.heuristic = heuristic
+        self.board = board
+        self.complexity = complexity
+
+    def __gt__(self, other):
+        return self.heuristic < other.heuristic
+
+    def __lt__(self, other):
+        return self.heuristic > other.heuristic
