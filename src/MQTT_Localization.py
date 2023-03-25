@@ -7,6 +7,9 @@ import numpy as np
 
 from . import Settings
 
+def distbetweenpoints(p1,p2)
+	return math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
+
 def trilateration(x1,y1,r1,x2,y2,r2,x3,y3,r3): # Based on https://www.101computing.net/cell-phone-trilateration-algorithm/
 	A = 2*x2 - 2*x1
 	B = 2*y2 - 2*y1
@@ -57,7 +60,7 @@ def smoothpoint(x,y):
 	bottomedge = [x, 1.0287]
 	edges = [leftedge, topedge, rightedge, bottomedge]
 
-	disttoedges = [math.hypot(edge[1] - computedpoint[1], edge[0] - computedpoint[0]) for edge in edges]
+	disttoedges = [distbetweenpoints(edge,computedpoint) for edge in edges]
 	indexmindist = disttoedges.index(min(disttoedges))
 	if indexmindist == 0:
 		smoothedpoint = [0, min(max(y,0),1.0287)]
