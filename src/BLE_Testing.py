@@ -13,6 +13,9 @@ from . import Settings
 ESP_SERVER_UUID = "df9f28cb-9b6a-4c8f-a3ff-8f087738c90a"
 ESP_UUID = "7bb6db74-6c47-4722-bb33-bfa652f64713"
 
+#ESP_SERVER_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#ESP_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+
 
 def on_disconnect(self):
     """Disconnect from the remote device."""
@@ -120,17 +123,18 @@ def connect_and_run(dev=None, device_address=None):
         print("Connecting to " + dev.alias)
     else:
         print("Connecting to " + device_address)
+
     Settings.monitor.connect()
     
     # Check if Connected Successfully
     if not Settings.monitor.connected:
         print("Didn't connect to device!")
         return
+
     Settings.connected = True
     Settings.monitor.dongle.on_disconnect = on_disconnect
     print('Connection successful!')
 
-    # Enable heart rate notifications
     Settings.noah_char.start_notify()
 
     if not Settings.notification_cb_set:
