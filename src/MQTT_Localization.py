@@ -7,7 +7,7 @@ import numpy as np
 
 from . import Settings
 
-def distbetweenpoints(p1,p2)
+def distbetweenpoints(p1,p2):
 	return math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
 
 def trilateration(x1,y1,r1,x2,y2,r2,x3,y3,r3): # Based on https://www.101computing.net/cell-phone-trilateration-algorithm/
