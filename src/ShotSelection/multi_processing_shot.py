@@ -1,6 +1,7 @@
 from functools import partial
 import math
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
+import multiprocessing as mp
 import pool_objets
 import shot_verifier
 import pool
@@ -102,14 +103,61 @@ def compute_shot_heuristic(shot : pool_objets.Shot, original_board : pool_objets
         return (heuristic, shot.angle, shot.magnitude)
 
    
-def getShot(shot, position):
-    magnitude, angle = shot
-    shot = pool_objets.Shot(angle, magnitude, position)  
-    if shot_verifier.verifyShotReachable(shot, board.balls):
-        return compute_shot_heuristic(shot=shot, original_board=board)
+def getShot(shot, position, shortCircuit : mp.Event):
+        magnitude, angle = shot
+        shot = pool_objets.Shot(angle, magnitude, position)  
+        if shot_verifier.verifyShotReachable(shot, board.balls):
+            output = compute_shot_heuristic(shot=shot, original_board=board)
+            return output
+def worker(i, shortCircuit, position, listOfShots, output_list, start_index, end_index):
 
+    for index in range(start_index, end_index):
+        if not shortCircuit.is_set():
+                shot = listOfShots[index]
+                output = getShot(shot, position, shortCircuit)
+                if output is not None:
+                    if output[0] >= 35:
+                        shortCircuit.set()
+                    output_list.append(output)
+    
+            
+        
 def run(listOfShots, position):
-    with Pool() as processor_pool:
-        results = processor_pool.map(partial(getShot, position=(position.x, position.y)),listOfShots)
-        results = [x for x in results if x is not None]
-        return results
+    print("number of cores: " + str(cpu_count()))
+
+    with mp.Manager() as manager:
+        shortCircuit = mp.Event()
+        outputList = manager.list()
+        inputList = manager.list(listOfShots)
+        processes = []
+        lenInput = len(inputList)
+        numProc = mp.cpu_count()
+        offset = lenInput // numProc
+        for i in range(mp.cpu_count()):
+            start_index = offset * i
+            end_index = (offset * (i + 1)) - 1
+            p = mp.Process(target=worker, args=(i, shortCircuit, (position.x, position.y), inputList, outputList, start_index, end_index))
+            p.start()
+            processes.append(p)
+            
+        for p in processes:
+            p.join()
+        
+        
+        return list(outputList)
+    # with Pool() as processor_pool:
+    #     for shot in processor_pool.imap_unordered(partial(getShot, position=(position.x, position.y), shortCircuit=shortCircuit),listOfShots):
+    #         if shot is not None:
+    #             results.append(shot)
+    #             if shot[0] >= target_output_value:
+    #                 print('short circuit')
+    #                 break
+    #     processor_pool.close()
+    #     processor_pool.join()
+
+    print("finished")
+
+    # with Pool() as processor_pool:
+    #     results = processor_pool.imap_unordered(partial(getShot, position=(position.x, position.y)),listOfShots)
+    #     results = [x for x in results if x is not None]
+    #     return results

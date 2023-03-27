@@ -172,8 +172,12 @@ class RealisticAI(PoolAI):
             else:
                 if ball.pocketed == False and ball.number > 8 and ball.number < 16:
                     vector2 = (ball.position.x - board.cue_ball.position.x, ball.position.y - board.cue_ball.position.y)
-                    vector1 = (0, 1) 
+                    vector1 = (1,0) 
                     angle = math.atan2(vector2[0], vector2[1]) - math.atan2(vector1[0], vector1[1])
+                    angle = math.degrees(angle)
+                    angle *= -1
+                    angle = (angle + 360) % 360
+                    angles.append(round(angle, 2))
                     
         return angles
     
@@ -222,35 +226,51 @@ class RealisticAI(PoolAI):
                     break
         queue : List[pool_objets.ComparableShot] = []
         
+        start_time = time.time()
+        total_operations = 0
         easy_shots : List[float] = self.generate_easy_shots(board)
 
-        
-            
-        offsets =  [val * 0.02 for val in range(-100, 100) ]
+        offsets =  [val * 0.1 for val in range(-20, 20) ]
 
         listOfShots = []
         for magnitude in magnitudes:
             for angle in easy_shots:
                 for val in offsets:
                     listOfShots.append((magnitude, angle + val))
-        multi_processing_shot.board = board
-        results = multi_processing_shot.run(listOfShots=listOfShots, position=position)
-        best_shot_easy = max(results,key=itemgetter(0))
+        best_shot = None
+        if easy_shots:
+            multi_processing_shot.board = board
         
-        total_shot_list = []
-        for magnitude in magnitudes:
-            for angle in range(360 * 4):
-                    angle = angle / 4
-                    total_shot_list.append((magnitude, angle))
+            results = multi_processing_shot.run(listOfShots=listOfShots, position=position)
+            total_operations += len(results)
+            print("computed :" + str(len(results)) + " easy shots")
+            best_shot = max(results,key=itemgetter(0))
 
-        multi_processing_shot.board = board
-        results = multi_processing_shot.run(listOfShots=total_shot_list, position=position)
-        best_shot = max(results,key=itemgetter(0))
-        if best_shot_easy[0] > best_shot[0]:
-            best_shot = best_shot_easy
-        shot = pool_objets.Shot(best_shot[1], best_shot[2], position)
-        comp_shot = pool_objets.ComparableShot(shot=shot, heuristic=best_shot[0], board=board, complexity=pool_objets.Complexity)
-    
+            easy_shot_short_circuit = False
+            if best_shot[0] >= 35: easy_shot_short_circuit = True
+
+        if not easy_shot_short_circuit:
+            total_shot_list = []
+            for magnitude in magnitudes:
+                for angle in range(360 * 2):
+                        angle = angle / 2
+                        total_shot_list.append((magnitude, angle))
+
+            multi_processing_shot.board = board
+            results = multi_processing_shot.run(listOfShots=total_shot_list, position=position)
+            total_operations += len(results)
+            print("computed :" + str(len(results)) + " regular shots")
+            shot = max(results,key=itemgetter(0))
+
+            if best_shot is None or shot[0] > best_shot[0]:
+                best_shot = shot
+
+        final_shot = pool_objets.Shot(best_shot[1], best_shot[2], position)
+        comp_shot = pool_objets.ComparableShot(shot=final_shot, heuristic=best_shot[0], board=board, complexity=pool_objets.Complexity)
+        
+        total_time = time.time() - start_time
+        print("total time: " + str(total_time))
+        print("time per operation: " + str(total_time / total_operations))
         return [comp_shot]
         # for magnitude in magnitudes:
         #     for angle in easy_shots:
