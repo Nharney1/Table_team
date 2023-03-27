@@ -37,9 +37,3 @@ def ConvertSSToSpeaker(x, y):
 			return 8
 		else:
 			return  7
-
-if __name__ == '__main__':
-	print("Expecting 3 got "  + str(ConvertSSToSpeaker(3.1051844, 0)))
-	print("Expecting 2 got "  + str(ConvertSSToSpeaker(1.453804, 0)))
-	print("Expecting 12 got "  + str(ConvertSSToSpeaker(0.0, 1.61054079)))
-	print("Expecting 11 got "  + str(ConvertSSToSpeaker(3.1051844, 0)))
