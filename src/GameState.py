@@ -1,7 +1,7 @@
 class InvalidBallCount(Exception):
 	pass
 
-def DetectShot(previousShot, currentShot):
+def DetermineShotOutcome(previousShot, currentShot):
 	p_black = 0
 	p_white = 0
 	p_green = 0

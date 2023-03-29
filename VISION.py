@@ -2,7 +2,7 @@ from src.ComputedShot import ComputedShot
 from src.HoughCircle import DetectCircles
 from src.AnkerCameraLibrary import AnkerCamera
 from src.BluetoothServer import BluetoothServerSocket
-from src.GameState import InvalidBallCount, DetectShot
+from src.GameState import InvalidBallCount, DetermineShotOutcome
 from src.BLE_Testing import Init_BLE
 from src.ShotSelectionHelper import computeShot
 from src.Speakers import DetermineNextSpeaker, ConvertSSToSpeaker
@@ -74,7 +74,7 @@ def main():
 
 		#if Previous_Ball_List is not None:
 			#try:
-				#ret = DetectShot(Previous_Ball_List, Current_Ball_List)
+				#ret = DetermineShotOutcome(Previous_Ball_List, Current_Ball_List)
 				# Need to add shot outcome logic in here
 				#print(ret)
 
@@ -97,7 +97,7 @@ def main():
 
 
 # Below is how to write a byte to the ESP32
-# Settings.noah_char.write_value(val.to_bytes(1,byteorder='big', signed=False))
+# Settings.esp_char.write_value(val.to_bytes(1,byteorder='big', signed=False))
 
 if __name__ == "__main__":
 	main()
