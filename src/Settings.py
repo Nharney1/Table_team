@@ -9,6 +9,8 @@ def InitializeGlobals():
 	global pause
 	global MQTT_Location
 	global MQTT_Lock
+	global PCBPauseGame
+	global PCBEndGame
 
 	connected = False
 	monitor = None # This is a temporary name for the client/Central object
@@ -18,4 +20,6 @@ def InitializeGlobals():
 	pause = False
 	MQTT_Location = None
 	MQTT_Lock = threading.Lock()
+	PCBPauseGame = False
+	PCBEndGame = False
 	print("GLOBALS DONE")
