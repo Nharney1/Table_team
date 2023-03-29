@@ -51,16 +51,15 @@ def main():
 		Target_Speakers.sort()
 
 		while not UserArrived(Current_Speakers, Target_Speakers):
-			
 			# Get the newest speaker location if available
 			Settings.MQTT_Lock.acquire()
-			if not Settings.Flag:
+			if not Settings.UpdateFlag:
 				Settings.MQTT_Lock.release()
 				time.sleep(1)
 				continue
 			else:
 				Current_Speakers = Settings.MQTT_Speakers
-				Settings.Flag = False
+				Settings.UpdateFlag = False
 				Settings.MQTT_Lock.release()
 
 			# Get speakers to play and send them to the ESP32
