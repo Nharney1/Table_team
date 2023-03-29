@@ -7,7 +7,8 @@ def InitializeGlobals():
 	global notification_cb_set
 	global esp_char
 	global pause
-	global MQTT_Location
+	global MQTT_Speakers
+	global MQTT_UpdateFlag
 	global MQTT_Lock
 	global PCBPauseGame
 	global PCBEndGame
@@ -18,7 +19,8 @@ def InitializeGlobals():
 	notification_cb_set = False
 	esp_char = None
 	pause = False
-	MQTT_Location = None
+	MQTT_Speakers = None
+	MQTT_UpdateFlag = False
 	MQTT_Lock = threading.Lock()
 	PCBPauseGame = False
 	PCBEndGame = False
