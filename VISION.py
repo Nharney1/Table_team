@@ -3,7 +3,7 @@ from src.HoughCircle import DetectCircles
 from src.AnkerCameraLibrary import AnkerCamera
 from src.BluetoothServer import BluetoothServerSocket
 from src.GameState import InvalidBallCount, DetermineShotOutcome
-from src.BLE_Testing import Init_BLE
+from src.BLEComms import Init_BLE, SendCommand, SEND_SPEAKERS
 from src.ShotSelectionHelper import computeShot
 from src.Speakers import DetermineNextSpeaker, ConvertSSToSpeaker, UserArrived
 
@@ -14,8 +14,6 @@ import time
 import cv2
 import threading
 import paho.mqtt.client as mqtt
-
-SEND_SPEAKERS = 100
 
 def main():
 
@@ -65,15 +63,11 @@ def main():
 				Settings.Flag = False
 				Settings.MQTT_Lock.release()
 
+			# Get speakers to play and send them to the ESP32
 			Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
+			SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
 
-			# Send command to play speakers
-			Settings.esp_char.write_value(SEND_SPEAKERS.to_bytes(1,byteorder='big', signed=False))
-			Settings.esp_char.write_value(Temp_Target_Speakers[0].to_bytes(1,byteorder='big', signed=False))
-			Settings.esp_char.write_value(Temp_Target_Speakers[1].to_bytes(1,byteorder='big', signed=False))
-
-
-
+		
 		#if Previous_Ball_List is not None:
 			#try:
 				#ret = DetermineShotOutcome(Previous_Ball_List, Current_Ball_List)
