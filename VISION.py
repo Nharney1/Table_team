@@ -5,7 +5,7 @@ from src.BluetoothServer import BluetoothServerSocket
 from src.GameState import InvalidBallCount, DetermineShotOutcome
 from src.BLE_Testing import Init_BLE
 from src.ShotSelectionHelper import computeShot
-from src.Speakers import DetermineNextSpeaker, ConvertSSToSpeaker
+from src.Speakers import DetermineNextSpeaker, ConvertSSToSpeaker, UserArrived
 
 from src import Settings
 from src.MQTT_Localization import MQTT_Main
@@ -15,6 +15,8 @@ import cv2
 import threading
 import paho.mqtt.client as mqtt
 
+SEND_SPEAKERS = 100
+
 def main():
 
 	# Initialize game variables
@@ -23,8 +25,8 @@ def main():
 	Previous_Ball_List = None
 	Current_Position = None
 	Target_Speakers = []
+	Temp_Target_Speakers = []
 	Current_Speakers = []
-	Guidance_Speakers = []
 	
 
 	#Initialize connections
@@ -50,25 +52,25 @@ def main():
 		Target_Speakers = ConvertSSToSpeaker(computedShot.playerPos[0], computedShot.playerPos[1])
 		Target_Speakers.sort()
 
-		while True:
-			# Get current position represented as speakers
+		while not UserArrived(Current_Speakers, Target_Speakers):
+			
+			# Get the newest speaker location if available
 			Settings.MQTT_Lock.acquire()
-			Current_Location = Settings.MQTT_Location
-			print(Current_Location)
-			Settings.MQTT_Lock.release()
-
-			Current_Speakers = ConvertULToSpeaker(Current_Location[0], Current_Location[1]) #TODO
-			Current_Speakers.sort()
-
-			if Target_Speakers == Current_Speakers:
-				# Is there a better way to do this?
-				time.sleep(5)
-				if Target_Speakers == Current_Speakers:
-					break
+			if not Settings.Flag:
+				Settings.MQTT_Lock.release()
+				time.sleep(1)
+				continue
 			else:
-				# We are not at the desired speaker(s) yet
-				Guidance_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
+				Current_Speakers = Settings.MQTT_Speakers
+				Settings.Flag = False
+				Settings.MQTT_Lock.release()
 
+			Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
+
+			# Send command to play speakers
+			Settings.esp_char.write_value(SEND_SPEAKERS.to_bytes(1,byteorder='big', signed=False))
+			Settings.esp_char.write_value(Temp_Target_Speakers[0].to_bytes(1,byteorder='big', signed=False))
+			Settings.esp_char.write_value(Temp_Target_Speakers[1].to_bytes(1,byteorder='big', signed=False))
 
 
 

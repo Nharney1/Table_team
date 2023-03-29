@@ -154,12 +154,24 @@ def ConvertSSToSpeaker(x, y):
 
 	return speakers
 
-def ConvertULToSpeaker(x, y):
-	# TODO
-	return -1
+def UserArrived(currentList, targetList):
+	if len(currentList) == 1:
+		if currentList[0] in targetList:
+			return True
+	elif len(currentList) == 2:
+		if currentList[0] in targetList or currentList[1] in targetList:
+			return True
+		return False
 
 # Tests
 if __name__ == '__main__':
+
+	print(UserArrived([1,2], [2,3]))
+	print(UserArrived([1,2], [4,5]))
+	print(UserArrived([1,2], [2,1]))
+	print(UserArrived([5,6], [6,5]))
+
+
 	print(DetermineNextSpeaker([1,2],[1]))
 	print(DetermineNextSpeaker([1,2],[2]))
 	print(DetermineNextSpeaker([1,2],[3,4]))
