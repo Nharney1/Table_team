@@ -16,7 +16,7 @@ def remove_smallest(numbers):
     numbers[smallestIndex] = 1000
     return numbers
 
-def closestspeaker(p1,p2):
+def closestspeaker(p1,p2):x
     speaker1 = [0,0]
     speaker2 = [1.6,0]
     speaker3 = [3.15,0]
@@ -179,7 +179,7 @@ def on_message(mqttc, obj, msg):
                 #print("Closest speaker is", finalclosestspeaker)
 		        Settings.MQTT_Lock.acquire()
                 if sorted(Settings.MQTT_Speaker) != sorted(finalclosestspeaker):
-		            Settings.MQTT_Speaker = finalclosestspeaker
+		            Settings.MQTT_Speaker = sorted(finalclosestspeaker)
                     Settings.MQTT_UpdateFlag = True
 		        Settings.MQTT_Lock.release()
 
