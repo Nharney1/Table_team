@@ -10,6 +10,9 @@ from enum import IntEnum
 from . import Settings
 
 SEND_SPEAKERS = 100
+RESUME_GAME = 101
+PAUSE_GAME = 102
+END_GAME = 103
 
 ESP_SERVER_UUID = "df9f28cb-9b6a-4c8f-a3ff-8f087738c90a"
 ESP_UUID = "7bb6db74-6c47-4722-bb33-bfa652f64713"
@@ -77,9 +80,21 @@ def on_new_noah(iface, changed_props, invalidated_props):
         return
 
     retVal = int(value[0])
-
     print("Got value "  + str(retVal))
-    # Update global state here
+
+    if retVal == RESUME_GAME:
+        Settings.PCBPauseGame = False
+        print("Resuming Game")
+    elif retVal == PAUSE_GAME:
+        Settings.PCBPauseGame = True
+        print("Pausing Game")
+    elif retVal == END_GAME:
+        Settings.PCBEndGame = True
+        print("Ending Game")
+    elif:
+        print("Unrecognized Command")
+
+    
 
 
 def connect_and_run(dev=None, device_address=None):
