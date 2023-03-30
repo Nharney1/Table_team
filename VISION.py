@@ -5,7 +5,7 @@ from src.BluetoothServer import BluetoothServerSocket
 from src.GameState import InvalidBallCount, DetermineShotOutcome
 from src.BLEComms import Init_BLE, SendCommand, SEND_SPEAKERS
 from src.ShotSelectionHelper import computeShot
-from src.Speakers import DetermineNextSpeaker, ConvertSSToSpeaker
+from src.Speakers import DetermineNextSpeaker, ConvertSSToSpeaker, UserArrived
 
 from src import Settings
 from src.MQTT_Localization import MQTT_Main
@@ -54,10 +54,10 @@ def main():
 		Target_Speakers.sort()
 		print("Final Target Speakers: " + str(Target_Speakers))
 
-		while True:
+		while not  UserArrived(Current_Speakers, Target_Speakers):
+
 			# Get current position represented as speakers
 			Settings.MQTT_Lock.acquire()
-
 			if not Settings.MQTT_UpdateFlag:
 				Settings.MQTT_Lock.release()
 				time.sleep(1)

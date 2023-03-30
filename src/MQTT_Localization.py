@@ -190,21 +190,16 @@ def on_message(mqttc, obj, msg):
                 if sorted(Settings.MQTT_Speakers) != sorted(finalclosestspeaker):
                     Settings.MQTT_Speakers = sorted(finalclosestspeaker)
                     Settings.MQTT_UpdateFlag = True
-<<<<<<< HEAD
-		Settings.MQTT_Lock.release()
-=======
-                Settings.MQTT_Lock.release()
->>>>>>> c5112ef64180b6728e2c9d7b320dc5f68dbb0731
-                closestspeakerarray = []
+		        Settings.MQTT_Lock.release()
 
+        closestspeakerarray = []
+        if len(xarray) > 5:
+            xarray = []
+        if len(yarray) > 5:
+            yarray = []
 
-      if len(xarray) > 5:
-          xarray = []
-      if len(yarray) > 5:
-          yarray = []
-
-      xarray.append(x)
-      yarray.append(y)
+        xarray.append(x)
+        yarray.append(y)
                
 def on_publish(mqttc, obj, mid):
     print("mid: "+str(mid))
