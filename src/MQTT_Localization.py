@@ -140,7 +140,7 @@ def on_message(mqttc, obj, msg):
       x2 = 1.9304 #76"
       y2 = 0
       z2 = 0.762
-      x3 = 0.9779 #38.5"
+      x3 = 0.9602 #38.5"
       y3 = 1.0287#40.5"
       z3 = 0.762
       global xarray
