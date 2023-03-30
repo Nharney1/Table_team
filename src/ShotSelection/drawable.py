@@ -36,6 +36,12 @@ class Drawable:
         if self.body.active:
             for fixture in self.body.fixtures:
                 self.draw_func(fixture.shape, self.body, self.color, screen, self.outline, self.outline_color)
+        cameraStand = Rect(
+            2.5 * screen.ppm, 
+            (Constants.TABLE_HEIGHT - Constants.WALL_THICKNESS + 0.18) * screen.ppm,
+            0.75 * screen.ppm,
+            Constants.WALL_THICKNESS  * screen.ppm)
+        pygame.draw.rect(screen.screen, (0,0,0), cameraStand)
 
     # https://github.com/openai/box2d-py/blob/master/examples/simple/simple_02.py
     # for the draw functions

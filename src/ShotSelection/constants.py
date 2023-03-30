@@ -22,6 +22,8 @@ class Constants:
     WIDTH = TABLE_RATIO * HEIGHT
     CUE_BALL = 0
     MAX_REACH = 3.5
+    CAMERA_STAND_START = 2.5
+    CAMERA_STAND_WIDTH = 0.75
 
 
 class Weights:

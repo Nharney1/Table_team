@@ -19,21 +19,27 @@ def verifyShotReachable(shot, balls):
         cue_angle
     )
 
+    # check if the players body is in the way
     if ((extension_x < Constants.TABLE_WIDTH and
         extension_x > 0) and
         (extension_y < (Constants.TABLE_HEIGHT) and
         extension_y > 0)
         ):
         return False
-
+    # check if the pool stick can reach
     if ((stick_extension_x < Constants.TABLE_WIDTH and
         stick_extension_x > 0) and
         (stick_extension_y < (Constants.TABLE_HEIGHT) and
         stick_extension_y > 0)
         ):
         return False
+    # check if camera mount is in the way
+    if (stick_extension_y < Constants.TABLE_HEIGHT and
+        stick_extension_x >= Constants.CAMERA_STAND_START and
+        stick_extension_x <=  Constants.CAMERA_STAND_START + Constants.CAMERA_STAND_WIDTH    
+        ):
+        return False
 
-    
     if not checkClearPath(cue_bal_pos=cue_ball_pos, angle=cue_angle, balls=balls):
         return False
 
@@ -80,10 +86,12 @@ def getRelativeAngle(angle, body_pos_x, body_pos_y):
     
     if round(body_pos_x, 2) == round(Constants.TABLE_WIDTH, 2):
         # right wall
-        shooter_angle = angle + 360
-        if shooter_angle >= 360:
-            shooter_angle %= 360
-        return shooter_angle * -1
+        shooter_angle = angle * -1
+        if shooter_angle >= 0 and shooter_angle <= 90:
+            return shooter_angle
+        else:
+            return shooter_angle - 360
+  
     if round(body_pos_y,2) == 0:
         # top wall
         shooter_angle = angle + 270

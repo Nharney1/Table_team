@@ -5,13 +5,16 @@ from src.BluetoothServer import BluetoothServerSocket
 from src.GameState import InvalidBallCount, DetermineShotOutcome
 from src.BLEComms import Init_BLE, SendCommand, SEND_SPEAKERS
 from src.ShotSelectionHelper import computeShot
-from src.Speakers import DetermineNextSpeaker, ConvertSSToSpeaker, UserArrived
+from src.Speakers import DetermineNextSpeaker, ConvertSSToSpeaker
 
 from src import Settings
+from src.MQTT_Localization import MQTT_Main
 from src.MQTT_Localization import MQTT_Main
 
 import time
 import cv2
+import threading
+import paho.mqtt.client as mqtt
 import threading
 import paho.mqtt.client as mqtt
 
@@ -23,8 +26,8 @@ def main():
 	Previous_Ball_List = None
 	Current_Position = None
 	Target_Speakers = []
-	Temp_Target_Speakers = []
 	Current_Speakers = []
+	Guidance_Speakers = []
 	
 
 	#Initialize connections
@@ -50,23 +53,28 @@ def main():
 		Target_Speakers = ConvertSSToSpeaker(computedShot.playerPos[0], computedShot.playerPos[1])
 		Target_Speakers.sort()
 
-		while not UserArrived(Current_Speakers, Target_Speakers):
-			# Get the newest speaker location if available
+		while True:
+			# Get current position represented as speakers
 			Settings.MQTT_Lock.acquire()
-			if not Settings.UpdateFlag:
-				Settings.MQTT_Lock.release()
-				time.sleep(1)
-				continue
+			Current_Location = Settings.MQTT_Location
+			print(Current_Location)
+			Settings.MQTT_Lock.release()
+
+			Current_Speakers = ConvertULToSpeaker(Current_Location[0], Current_Location[1]) #TODO
+			Current_Speakers.sort()
+
+			if Target_Speakers == Current_Speakers:
+				# Is there a better way to do this?
+				time.sleep(5)
+				if Target_Speakers == Current_Speakers:
+					break
 			else:
-				Current_Speakers = Settings.MQTT_Speakers
-				Settings.UpdateFlag = False
-				Settings.MQTT_Lock.release()
+				# We are not at the desired speaker(s) yet
+				Guidance_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
 
-			# Get speakers to play and send them to the ESP32
-			Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
-			SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
 
-		
+
+
 		#if Previous_Ball_List is not None:
 			#try:
 				#ret = DetermineShotOutcome(Previous_Ball_List, Current_Ball_List)
@@ -90,9 +98,6 @@ def main():
 
 # CLEANUP myCam.shutdown()
 
-
-# Below is how to write a byte to the ESP32
-# Settings.esp_char.write_value(val.to_bytes(1,byteorder='big', signed=False))
 
 if __name__ == "__main__":
 	main()

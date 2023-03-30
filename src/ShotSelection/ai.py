@@ -1,15 +1,20 @@
 from abc import ABC, abstractmethod
+from functools import partial
 import heapq
+from itertools import combinations
 import math
+from operator import itemgetter
 import time
 from typing import List
-
+from multiprocessing import Pool
 from Box2D import b2Vec2
 
 import pool_objets
 from constants import Constants, Weights
 import shot_verifier
 import pool
+import multi_processing_shot
+
 
 class PoolAI(ABC):
     
@@ -51,20 +56,6 @@ class RandomAI(PoolAI):
             shot.cue_ball_position = b2Vec2(x, y)
         return shot
 
-class ComparableShot:
-
-    def __init__(self, shot : pool_objets.Shot, heuristic : float, board : pool_objets.PoolBoard, complexity : pool_objets.Complexity = pool_objets.Complexity()):
-        self.shot = shot
-        self.heuristic = heuristic
-        self.board = board
-        self.complexity = complexity
-
-    def __gt__(self, other):
-        return self.heuristic < other.heuristic
-
-    def __lt__(self, other):
-        return self.heuristic > other.heuristic
-
 class SimpleAI(PoolAI):
 
     def name(self) -> str:
@@ -75,7 +66,7 @@ class SimpleAI(PoolAI):
         return shots[0].shot
 
     # returns the 10 best shots sorted from best to worst
-    def compute_best_shots(self, board : pool_objets.PoolBoard, magnitudes, angles, length=10) -> List[ComparableShot]:
+    def compute_best_shots(self, board : pool_objets.PoolBoard, magnitudes, angles, length=10) -> List[pool_objets.ComparableShot]:
         position = board.cue_ball.position
         if board.cue_ball.pocketed:
             while True:
@@ -84,7 +75,7 @@ class SimpleAI(PoolAI):
                 position = b2Vec2(x, y)
                 if pool_objets.Shot.test_cue_ball_position(position, board.balls):
                     break
-        queue : List[ComparableShot] = []
+        queue : List[pool_objets.ComparableShot] = []
         for angle in angles:
             for magnitude in magnitudes:
                 if len(queue) % 50 == 0:
@@ -98,7 +89,7 @@ class SimpleAI(PoolAI):
             shots.append(heapq.heappop(queue))
         return shots
 
-    def compute_shot_heuristic(self, shot : pool_objets.Shot, board : pool_objets.PoolBoard) -> ComparableShot:
+    def compute_shot_heuristic(self, shot : pool_objets.Shot, board : pool_objets.PoolBoard) -> pool_objets.ComparableShot:
         pool.Pool.WORLD.load_board(board)
         pool.Pool.WORLD.shoot(shot)
         pool.Pool.WORLD.simulate_until_still(Constants.TIME_STEP, Constants.VEL_ITERS, Constants.POS_ITERS)
@@ -107,7 +98,7 @@ class SimpleAI(PoolAI):
 
         if board.turn == pool_objets.PoolPlayer.PLAYER2:
             heuristic *= -1.0
-        return ComparableShot(shot, heuristic, the_board)
+        return pool_objets.ComparableShot(shot, heuristic, the_board)
 
     # Computes the heuristic of a given board. This is computed in terms of
     # player 1 where a higher score means a better board for player 1.
@@ -181,8 +172,12 @@ class RealisticAI(PoolAI):
             else:
                 if ball.pocketed == False and ball.number > 8 and ball.number < 16:
                     vector2 = (ball.position.x - board.cue_ball.position.x, ball.position.y - board.cue_ball.position.y)
-                    vector1 = (0, 1) 
+                    vector1 = (1,0) 
                     angle = math.atan2(vector2[0], vector2[1]) - math.atan2(vector1[0], vector1[1])
+                    angle = math.degrees(angle)
+                    angle *= -1
+                    angle = (angle + 360) % 360
+                    angles.append(round(angle, 2))
                     
         return angles
     
@@ -192,35 +187,35 @@ class RealisticAI(PoolAI):
         shots = self.compute_best_shots(board, magnitudes, angles)
         
         
-        i = 0
-        shot_complexity : pool_objets.Complexity = shots[i].complexity
-        print("Shot total collisions " + str(shot_complexity.total_collisions))
-        print("Shot bank shot modifier " + str(shot_complexity.collisions_with_table))
-        if shots[i].board.cue_ball.pocketed:
-            print("cue ball pocketed")
-        print(self.compute_shot_heuristic(shots[i].shot, board))
-        print("heureistic before " + str(self.compute_heuristic(shots[i].board, board)))
-        print("Total heursitic " + str(shots[i].heuristic))
-        print("distance before contact" + str(shots[i].complexity.distance_before_contact))
-        print("cue ball pocketed: " + str(board.cue_ball.pocketed))
-        i = 0
-        shot_complexity : pool_objets.Complexity = shots[i].complexity
-        print("Shot total collisions " + str(shot_complexity.total_collisions))
-        print("Shot bank shot modifier " + str(shot_complexity.collisions_with_table))
-        if shots[i].board.cue_ball.pocketed:
-            print("cue ball pocketed")
-        print(self.compute_shot_heuristic(shots[i].shot, board))
-        print("heureistic before " + str(self.compute_heuristic(shots[i].board, board)))
-        print("Total heursitic " + str(shots[i].heuristic))
-        print("distance before contact" + str(shots[i].complexity.distance_before_contact))
-        print("cue ball pocketed: " + str(board.cue_ball.pocketed))
-        print("angle " + str(shots[i].shot.angle))
+        # i = 0
+        # shot_complexity : pool_objets.Complexity = shots[i].complexity
+        # print("Shot total collisions " + str(shot_complexity.total_collisions))
+        # print("Shot bank shot modifier " + str(shot_complexity.collisions_with_table))
+        # if shots[i].board.cue_ball.pocketed:
+        #     print("cue ball pocketed")
+        # print(self.compute_shot_heuristic(shots[i].shot, board))
+        # print("heureistic before " + str(self.compute_heuristic(shots[i].board, board)))
+        # print("Total heursitic " + str(shots[i].heuristic))
+        # print("distance before contact" + str(shots[i].complexity.distance_before_contact))
+        # print("cue ball pocketed: " + str(board.cue_ball.pocketed))
+        # i = 0
+        # shot_complexity : pool_objets.Complexity = shots[i].complexity
+        # print("Shot total collisions " + str(shot_complexity.total_collisions))
+        # print("Shot bank shot modifier " + str(shot_complexity.collisions_with_table))
+        # if shots[i].board.cue_ball.pocketed:
+        #     print("cue ball pocketed")
+        # print(self.compute_shot_heuristic(shots[i].shot, board))
+        # print("heureistic before " + str(self.compute_heuristic(shots[i].board, board)))
+        # print("Total heursitic " + str(shots[i].heuristic))
+        # print("distance before contact" + str(shots[i].complexity.distance_before_contact))
+        # print("cue ball pocketed: " + str(board.cue_ball.pocketed))
+        # print("angle " + str(shots[i].shot.angle))
 
         return shots[0].shot
 
 
     # returns the 10 best shots sorted from best to worst
-    def compute_best_shots(self, board : pool_objets.PoolBoard, magnitudes, angles, length=10) -> List[ComparableShot]:
+    def compute_best_shots(self, board : pool_objets.PoolBoard, magnitudes, angles, length=10) -> List[pool_objets.ComparableShot]:
         position = board.cue_ball.position
         if board.cue_ball.pocketed:
             while True:
@@ -229,58 +224,108 @@ class RealisticAI(PoolAI):
                 position = b2Vec2(x, y)
                 if pool_objets.Shot.test_cue_ball_position(position, board.balls):
                     break
-        queue : List[ComparableShot] = []
+        queue : List[pool_objets.ComparableShot] = []
         
+        start_time = time.time()
+        total_operations = 0
         easy_shots : List[float] = self.generate_easy_shots(board)
 
-        offsets =  [-0.5, -0.35, -0.25, -0.15, -0.1, 0, 0.1, 0.15, 0.25, 0.35, 0.5]
-        for magnitude in magnitudes:
-            for angle in easy_shots:
-                #lower_angle, higher_angle = angle - 0.5, angle + 0.5
-                for val in offsets:
+        offsets =  [val * 0.03 for val in range(-75, 75) ]
 
-                    shot = pool_objets.Shot(angle + val, magnitude, position)  
+        listOfShots = []
+        i = 0
+        for magnitude in magnitudes:
+            if i % 2:
+                for angle in easy_shots:
+                    for val in offsets:
+                        listOfShots.append((magnitude, angle + val))
+
+            i+=1
+            
+        easy_shot_short_circuit = False
+        best_shot = None
+        if easy_shots:
+            multi_processing_shot.board = board
+        
+            results = multi_processing_shot.run(listOfShots=listOfShots, position=position)
+            total_operations += len(results)
+            print("computed :" + str(len(results)) + " easy shots")
+            if results:
+                best_shot = max(results,key=itemgetter(0))
+
+                
+                if best_shot[0] >= 35: easy_shot_short_circuit = True
+
+        if not easy_shot_short_circuit:
+            total_shot_list = []
+            for magnitude in magnitudes:
+                for angle in range(360 * 2):
+                        angle = angle / 2
+                        total_shot_list.append((magnitude, angle))
+
+            multi_processing_shot.board = board
+            results = multi_processing_shot.run(listOfShots=total_shot_list, position=position)
+            total_operations += len(results)
+            print("computed :" + str(len(results)) + " regular shots")
+            shot = max(results,key=itemgetter(0))
+
+            if best_shot is None or shot[0] > best_shot[0]:
+                best_shot = shot
+
+        final_shot = pool_objets.Shot(best_shot[1], best_shot[2], position)
+        comp_shot = pool_objets.ComparableShot(shot=final_shot, heuristic=best_shot[0], board=board, complexity=pool_objets.Complexity)
+        
+        total_time = time.time() - start_time
+        print("total time: " + str(total_time))
+        print("time per operation: " + str(total_time / total_operations))
+        return [comp_shot]
+        # for magnitude in magnitudes:
+        #     for angle in easy_shots:
+        #         #lower_angle, higher_angle = angle - 0.5, angle + 0.5
+        #         for val in offsets:
+
+        #             shot = pool_objets.Shot(angle + val, magnitude, position)  
                     
-                    if shot_verifier.verifyShotReachable(shot, board.balls):
+        #             if shot_verifier.verifyShotReachable(shot, board.balls):
 
-                        shot = self.compute_shot_heuristic(shot, board) 
-                        print("Current heureistic" + str(shot.heuristic))
+        #                 shot = self.compute_shot_heuristic(shot, board) 
+        #                 print("Current heureistic" + str(shot.heuristic))
 
-                        if shot.heuristic >= 35:
-                            print("short circuit, good shot found")
-                            return [shot]
-                        heapq.heappush(queue, shot)
+        #                 if shot.heuristic >= 35:
+        #                     print("short circuit, good shot found")
+        #                     return [shot]
+        #                 heapq.heappush(queue, shot)
 
-        for magnitude in magnitudes:
-            for angle in range(360):     
-                if len(queue) % 50 == 0:
-                    print(f"Shots generated: {len(queue)}")
-                shot = pool_objets.Shot(angle, magnitude, position)
+        # for magnitude in magnitudes:
+        #     for angle in range(360):     
+        #         if len(queue) % 50 == 0:
+        #             print(f"Shots generated: {len(queue)}")
+        #         shot = pool_objets.Shot(angle, magnitude, position)
             
                 
-                if shot_verifier.verifyShotReachable(shot, board.balls):
-                    shot = self.compute_shot_heuristic(shot, board)
-                    for easy_angle in easy_shots:
-                        great_shot_lower, great_shot_higher = easy_angle - 1, easy_angle + 1
-                        good_shot_lower, good_shot_higher = easy_angle - 2, easy_angle + 2
+        #         if shot_verifier.verifyShotReachable(shot, board.balls):
+        #             shot = self.compute_shot_heuristic(shot, board)
+        #             for easy_angle in easy_shots:
+        #                 great_shot_lower, great_shot_higher = easy_angle - 1, easy_angle + 1
+        #                 good_shot_lower, good_shot_higher = easy_angle - 2, easy_angle + 2
                         
-                        if angle > great_shot_lower and angle < great_shot_higher:
-                            shot.heuristic += Weights.GREAT_SHOT
-                            break     
-                        elif angle > good_shot_lower and angle < good_shot_higher:
-                            shot.heuristic += Weights.GOOD_SHOT
-                            break   
-                    if shot.heuristic >= 20:
-                        print("short circuit, good shot found")
-                        return [shot]
+        #                 if angle > great_shot_lower and angle < great_shot_higher:
+        #                     shot.heuristic += Weights.GREAT_SHOT
+        #                     break     
+        #                 elif angle > good_shot_lower and angle < good_shot_higher:
+        #                     shot.heuristic += Weights.GOOD_SHOT
+        #                     break   
+        #             if shot.heuristic >= 20:
+        #                 print("short circuit, good shot found")
+        #                 return [shot]
 
-                    heapq.heappush(queue, shot)
-        shots = []
-        for _ in range(length):
-            shots.append(heapq.heappop(queue))
-        return shots
+        #             heapq.heappush(queue, shot)
+        # shots = []
+        # for _ in range(length):
+        #     shots.append(heapq.heappop(queue))
+        # return shots
 
-    def compute_shot_heuristic(self, shot : pool_objets.Shot, original_board : pool_objets.PoolBoard) -> ComparableShot:
+    def compute_shot_heuristic(self, shot : pool_objets.Shot, original_board : pool_objets.PoolBoard) -> pool_objets.ComparableShot:
 
         pool.Pool.WORLD.load_board(original_board)
         pool.Pool.WORLD.shoot(shot)
@@ -313,7 +358,7 @@ class RealisticAI(PoolAI):
                 
         if original_board.turn == pool_objets.PoolPlayer.PLAYER2:
             heuristic *= -1.0
-        return ComparableShot(shot, heuristic, current_board, complexity)
+        return pool_objets.ComparableShot(shot, heuristic, current_board, complexity)
 
     # Computes the heuristic of a given board. This is computed in terms of
     # player 1 where a higher score means a better board for player 1.
