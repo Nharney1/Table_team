@@ -29,42 +29,48 @@ def main():
 
 	#Initialize connections
 	Settings.InitializeGlobals()
-	#Init_BLE()
+	myCam = AnkerCamera(-1) # 1 on Jetson Nano; 2 on laptop
+	myCam.take_video()
+	cv2.destroyAllWindows()
+	Init_BLE()
 	#mqttc = mqtt.Client(transport='websockets')   
 	#mqttc.connect('broker.emqx.io', 8083, 60)
 	#mqttc.subscribe("t/sd/feedback", 0)
-	#MQTT_Thread = threading.Thread(target = MQTT_Main)
-	#MQTT_Thread.start()
-	#myCam = AnkerCamera(0) # 1 on Jetson Nano; 2 on laptop
-	#myCam.take_video()
-	#cv2.destroyAllWindows()
-	#print("Initialization Complete!")
-	#time.sleep(2)
+	MQTT_Thread = threading.Thread(target = MQTT_Main)
+	MQTT_Thread.start()
+	time.sleep(5)
+	print("Initialization Complete!")
 
 	while True:
-		# for i in range(3):
-		# 	myCam.take_picture()
+		for i in range(3):
+		 	myCam.take_picture()
 
 		Current_Ball_List = DetectCircles()
 		computedShot : ComputedShot = computeShot(Current_Ball_List=Current_Ball_List)
 		Target_Speakers = ConvertSSToSpeaker(computedShot.playerPos[0], computedShot.playerPos[1])
 		Target_Speakers.sort()
+		print("Final Target Speakers: " + str(Target_Speakers))
 
 		while not UserArrived(Current_Speakers, Target_Speakers):
 			# Get the newest speaker location if available
 			Settings.MQTT_Lock.acquire()
-			if not Settings.UpdateFlag:
+			if not Settings.MQTT_UpdateFlag:
 				Settings.MQTT_Lock.release()
 				time.sleep(1)
 				continue
 			else:
 				Current_Speakers = Settings.MQTT_Speakers
-				Settings.UpdateFlag = False
+				Settings.MQTT_UpdateFlag = False
 				Settings.MQTT_Lock.release()
 
 			# Get speakers to play and send them to the ESP32
+			print("Take step towards speaker")
 			Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
+			print("Target speakers: " + str(Temp_Target_Speakers))
 			SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
+
+		print("USER TAKE SHOT")
+		break
 
 		
 		#if Previous_Ball_List is not None:

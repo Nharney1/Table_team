@@ -91,7 +91,7 @@ def on_new_noah(iface, changed_props, invalidated_props):
     elif retVal == END_GAME:
         Settings.PCBEndGame = True
         print("Ending Game")
-    elif:
+    else:
         print("Unrecognized Command")
 
     
@@ -171,7 +171,7 @@ def SendCommand(command, argList):
             # We only really need one speaker, but to be compliant for the ESP32 state machine send it twice
             Settings.esp_char.write_value(argList[0].to_bytes(1,byteorder='big', signed=False))
             Settings.esp_char.write_value(argList[0].to_bytes(1,byteorder='big', signed=False))
-        elif len(arglist) == 2:
+        elif len(argList) == 2:
             # We need to play two different speakers
             Settings.esp_char.write_value(argList[0].to_bytes(1,byteorder='big', signed=False))
             Settings.esp_char.write_value(argList[1].to_bytes(1,byteorder='big', signed=False))

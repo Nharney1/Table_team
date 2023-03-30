@@ -19,7 +19,7 @@ def InitializeGlobals():
 	notification_cb_set = False
 	esp_char = None
 	pause = False
-	MQTT_Speakers = None
+	MQTT_Speakers = [-1,-1]
 	MQTT_UpdateFlag = False
 	MQTT_Lock = threading.Lock()
 	PCBPauseGame = False

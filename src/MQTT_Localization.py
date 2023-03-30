@@ -7,6 +7,9 @@ import numpy as np
 import math
 from collections import Counter
 from . import Settings
+from statistics import mode, StatisticsError
+
+closestspeakerarray = []
 
 def distbetweenpoints(p1,p2):
 	return math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
@@ -16,7 +19,7 @@ def remove_smallest(numbers):
     numbers[smallestIndex] = 1000
     return numbers
 
-def closestspeaker(p1,p2):x
+def closestspeaker(p1,p2):
     speaker1 = [0,0]
     speaker2 = [1.6,0]
     speaker3 = [3.15,0]
@@ -34,7 +37,7 @@ def closestspeaker(p1,p2):x
     closestspeaker = []
     speakers = [speaker1, speaker2, speaker3, speaker4, speaker5, speaker6, speaker7, speaker8, speaker9, speaker10, speaker11, speaker12]
     disttospeakers = [distbetweenpoints(computedpoint, speaker) for speaker in speakers]
-    print(disttospeakers)
+    #print(disttospeakers)
     closestspeaker.append(disttospeakers.index(min(disttospeakers)) + 1)
     disttospeakers = remove_smallest(disttospeakers)
     closestspeaker.append(disttospeakers.index(min(disttospeakers)) + 1)
@@ -86,8 +89,8 @@ def smoothpoint(x,y):
     computedpoint = [x,y]
     leftedge = [0,abs(y)]
     topedge = [abs(x),0]
-    rightedge = [1.9304, abs(y)]
-    bottomedge = [abs(x), 1.0287]
+    rightedge = [1.9202, abs(y)]
+    bottomedge = [abs(x), 1.0972]
     edges = [leftedge, topedge, rightedge, bottomedge]
 
     #disttoedges = [0,0,0,0]
@@ -98,13 +101,13 @@ def smoothpoint(x,y):
     disttoedges = [distbetweenpoints(computedpoint, edge) for edge in edges]
     indexmindist = disttoedges.index(min(disttoedges))
     if indexmindist == 0:
-        smoothedpoint = [0, min(max(y,0),1.0287)]
+        smoothedpoint = [0, min(max(y,0),1.0972)]
     elif indexmindist == 1:
-        smoothedpoint = [min(max(x,0),1.9304), 0]
+        smoothedpoint = [min(max(x,0),1.9202), 0]
     elif indexmindist == 2:
-        smoothedpoint = [1.9304, min(max(y,0),1.0287)]
+        smoothedpoint = [1.9304, min(max(y,0),1.0972)]
     elif indexmindist == 3:
-        smoothedpoint = [min(max(x,0),1.9304),1.0287]
+        smoothedpoint = [min(max(x,0),1.9202),1.0972]
 
     return smoothedpoint
 
@@ -123,6 +126,7 @@ xarray = []
 yarray = []
 
 def on_message(mqttc, obj, msg):
+    global closestspeakerarray
     #print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
     if msg.topic == "t/sd/uwb":
       uwbdist = json.loads(msg.payload.decode("utf-8"))["dist"]
@@ -131,12 +135,12 @@ def on_message(mqttc, obj, msg):
       r2 = abs(float(uwbdist.split(",")[1])) #COCONUT
       r3 = abs(float(uwbdist.split(",")[2])) #CARAMEL
       x1 = 0
-      y1 = 0
+      y1 = -0.1
       z1 = 0.762
       x2 = 1.9304 #76"
-      y2 = 0
+      y2 = -0.1
       z2 = 0.762
-      x3 = 0.9779 #38.5"
+      x3 = 0.9602 #38.5"
       y3 = 1.0287#40.5"
       z3 = 0.762
       global xarray
@@ -151,8 +155,6 @@ def on_message(mqttc, obj, msg):
       #if abs(y - np.mean(yarray)) < 0.61:
        #   yarray.append(y)
 
-      closestspeakerarray = []
-
       if len(xarray) > 5:
           x = np.mean(xarray)
           y = np.mean(yarray)
@@ -162,26 +164,35 @@ def on_message(mqttc, obj, msg):
           #print("After smoothing in meters", arraydist)
           #print("After smoothing in feet", arraydistfeet)
           currentclosestspeaker = closestspeaker(arraydistfeet[0],arraydistfeet[1])
-          closestspeakerarray.append(currentclosestspeaker[0],currentclosestspeaker[1])
-
+          closestspeakerarray.append(currentclosestspeaker[0])
+          closestspeakerarray.append(currentclosestspeaker[1])
+          
       if len(closestspeakerarray) == 6:
-          #print("Array of closest speakers is", closestspeakerarray)
+          print("Array of closest speakers is", closestspeakerarray)
           uniqueitems = Counter(closestspeakerarray).keys()
           if len(uniqueitems) >= 5:
                 closestspeakerarray.pop(0)
-                closestspeakerarray.pop(1)
+                closestspeakerarray.pop(0)
 
           else:
                 finalclosestspeaker = []
-                finalclosestspeaker.append(mode(closestspeakerarray))
-                closestspeakerarray = [el for el in closestspeakerarray if el != mode(closestspeakerarray)]
-                finalclosestspeaker.append(mode(closestspeakerarray))
-                #print("Closest speaker is", finalclosestspeaker)
-		Settings.MQTT_Lock.acquire()
-                if sorted(Settings.MQTT_Speaker) != sorted(finalclosestspeaker):
-		    Settings.MQTT_Speaker = sorted(finalclosestspeaker)
+                try:
+                    finalclosestspeaker.append(mode(closestspeakerarray))
+                    closestspeakerarray = [el for el in closestspeakerarray if el != mode(closestspeakerarray)]
+                    finalclosestspeaker.append(mode(closestspeakerarray))
+                except StatisticsError:
+                    temp = Counter(closestspeakerarray)
+                    finalclosestspeaker_freq = temp.most_common(2)
+                    finalclosestspeaker = [speak[0] for speak in finalclosestspeaker_freq]
+
+                print("Closest speaker is", finalclosestspeaker)
+                Settings.MQTT_Lock.acquire()
+                if sorted(Settings.MQTT_Speakers) != sorted(finalclosestspeaker):
+                    Settings.MQTT_Speakers = sorted(finalclosestspeaker)
                     Settings.MQTT_UpdateFlag = True
-		Settings.MQTT_Lock.release()
+                Settings.MQTT_Lock.release()
+                closestspeakerarray = []
+
 
       if len(xarray) > 5:
           xarray = []
@@ -190,11 +201,6 @@ def on_message(mqttc, obj, msg):
 
       xarray.append(x)
       yarray.append(y)
-
-      if xarray == []:
-          xarray.append(x)
-      if yarray == []:
-          yarray.append(y)
                
 def on_publish(mqttc, obj, mid):
     print("mid: "+str(mid))
