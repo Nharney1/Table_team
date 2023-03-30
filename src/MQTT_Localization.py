@@ -155,11 +155,9 @@ def on_message(mqttc, obj, msg):
       #if abs(y - np.mean(yarray)) < 0.61:
        #   yarray.append(y)
 
-      closestspeakerarray = []
-
       if len(xarray) > 5:
-          x = xarray[len(xarray)-1]
-          y = yarray[len(yarray)-1]
+          x = np.mean(xarray)
+          y = np.mean(yarray)
           #print("Before smoothing in meters", [x,y])
           arraydist = np.round(smoothpoint(x,y),2)
           arraydistfeet = np.round([r*3.28084 for r in arraydist],2)
@@ -182,11 +180,11 @@ def on_message(mqttc, obj, msg):
                 closestspeakerarray = [el for el in closestspeakerarray if el != mode(closestspeakerarray)]
                 finalclosestspeaker.append(mode(closestspeakerarray))
                 #print("Closest speaker is", finalclosestspeaker)
-		        Settings.MQTT_Lock.acquire()
+		Settings.MQTT_Lock.acquire()
                 if sorted(Settings.MQTT_Speaker) != sorted(finalclosestspeaker):
-		            Settings.MQTT_Speaker = sorted(finalclosestspeaker)
+		    Settings.MQTT_Speaker = sorted(finalclosestspeaker)
                     Settings.MQTT_UpdateFlag = True
-		        Settings.MQTT_Lock.release()
+		Settings.MQTT_Lock.release()
 
       if len(xarray) > 5:
           xarray = []
