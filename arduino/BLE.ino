@@ -5,8 +5,8 @@
 #include <BLE2902.h>
 
 #define bleServerName "TABLE_TEAM_ESP32" // BLE server name
-#define NOAH_SERVER_UUID "df9f28cb-9b6a-4c8f-a3ff-8f087738c90a"
-#define NOAH_UUID "7bb6db74-6c47-4722-bb33-bfa652f64713"
+#define TABLE_SERVER_UUID "df9f28cb-9b6a-4c8f-a3ff-8f087738c90a"
+#define TABLE_UUID "7bb6db74-6c47-4722-bb33-bfa652f64713"
 
 int ShouldPlaySpeaker = -1;
 int NumberOfRemainingArguments = -1;
@@ -17,23 +17,23 @@ bool deviceConnected = false;
 
 // Setup callbacks onConnect and onDisconnect
 class MyServerCallbacks: public BLEServerCallbacks {
-    void onConnect(BLEServer* noahServer) {
+    void onConnect(BLEServer* tableServer) {
         Serial.println("Connection established");
         deviceConnected = true;
     }
-    void onDisconnect(BLEServer* noahServer) {
+    void onDisconnect(BLEServer* tableServer) {
         Serial.println("Re-advertising due to disconnect");
         deviceConnected = false;
-        noahServer->startAdvertising(); // restart advertising
+        tableServer->startAdvertising(); // restart advertising
     }
 };
 
 // BLE objects
-BLEServer *noahServer;
-BLEService *noahService;
-BLECharacteristic *noahCharacteristic;
+BLEServer *tableServer;
+BLEService *tableService;
+BLECharacteristic *tableCharacteristic;
 
-BLEDescriptor noahDescriptor(BLEUUID((uint16_t)0x2903));
+BLEDescriptor tableBleDescriptorcriptor(BLEUUID((uint16_t)0x2903));
 
 // Function prototypes
 void createCharacteristics();
@@ -80,31 +80,31 @@ void setupBLE() {
     BLEDevice::init(bleServerName);
 
     // Create the BLE Server
-    noahServer = BLEDevice::createServer();
-    noahServer->setCallbacks(new MyServerCallbacks());
+    tableServer = BLEDevice::createServer();
+    tableServer->setCallbacks(new MyServerCallbacks());
 
     // Create the BLE Service
-    noahService = noahServer->createService(NOAH_SERVER_UUID);
+    tableService = tableServer->createService(TABLE_SERVER_UUID);
     
     // Create BLE Characteristics and Create a BLE Descriptor
     createCharacteristics();
 
     // Start the service
-    noahService->start();
+    tableService->start();
 
     // Start advertising
     BLEAdvertising *tableAdvertising = BLEDevice::getAdvertising();
-    tableAdvertising->addServiceUUID(NOAH_SERVER_UUID);
+    tableAdvertising->addServiceUUID(TABLE_SERVER_UUID);
     BLEDevice::startAdvertising();
     Serial.println("Waiting a client connection to notify...");
 }
 
 // Create all BLE characteristics & descriptors
 void createCharacteristics() {
-    noahCharacteristic = noahService->createCharacteristic(NOAH_UUID, BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_WRITE_NR);
-    noahDescriptor.setValue("noah descriptor");
-    noahCharacteristic->addDescriptor(&noahDescriptor);
-    noahCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
+    tableCharacteristic = tableService->createCharacteristic(TABLE_UUID, BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_WRITE_NR);
+    tableBleDescriptorcriptor.setValue("table descriptor");
+    tableCharacteristic->addDescriptor(&tableBleDescriptorcriptor);
+    tableCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
 }
 
 // * Set characteristic value and notify client
@@ -112,6 +112,14 @@ void updateCharacteristic(BLECharacteristic *cueCharacteristic, int value) {
     // Update and notify
     cueCharacteristic->setValue(value);
     cueCharacteristic->notify();
+}
+
+void SendCommandToNano(BLECharacteristic *channel, int command) {
+    channel->setValue(command);
+    channel->notify();
+
+    // Calling convention is:
+    // SendCommandToNano(tableCharacteristic, command);
 }
 
 void setup() {
