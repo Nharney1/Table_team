@@ -172,7 +172,7 @@ def on_message(mqttc, obj, msg):
           uniqueitems = Counter(closestspeakerarray).keys()
           if len(uniqueitems) >= 5:
                 closestspeakerarray.pop(0)
-                closestspeakerarray.pop(1)
+                closestspeakerarray.pop(0)
 
           else:
                 finalclosestspeaker = []
