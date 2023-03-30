@@ -7,6 +7,9 @@ import numpy as np
 import math
 from collections import Counter
 from . import Settings
+from statistics import mode
+
+closestspeakerarray = []
 
 def distbetweenpoints(p1,p2):
 	return math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
@@ -16,7 +19,7 @@ def remove_smallest(numbers):
     numbers[smallestIndex] = 1000
     return numbers
 
-def closestspeaker(p1,p2):x
+def closestspeaker(p1,p2):
     speaker1 = [0,0]
     speaker2 = [1.6,0]
     speaker3 = [3.15,0]
@@ -34,7 +37,7 @@ def closestspeaker(p1,p2):x
     closestspeaker = []
     speakers = [speaker1, speaker2, speaker3, speaker4, speaker5, speaker6, speaker7, speaker8, speaker9, speaker10, speaker11, speaker12]
     disttospeakers = [distbetweenpoints(computedpoint, speaker) for speaker in speakers]
-    print(disttospeakers)
+    #print(disttospeakers)
     closestspeaker.append(disttospeakers.index(min(disttospeakers)) + 1)
     disttospeakers = remove_smallest(disttospeakers)
     closestspeaker.append(disttospeakers.index(min(disttospeakers)) + 1)
@@ -123,6 +126,7 @@ xarray = []
 yarray = []
 
 def on_message(mqttc, obj, msg):
+    global closestspeakerarray
     #print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
     if msg.topic == "t/sd/uwb":
       uwbdist = json.loads(msg.payload.decode("utf-8"))["dist"]
@@ -154,16 +158,17 @@ def on_message(mqttc, obj, msg):
       closestspeakerarray = []
 
       if len(xarray) > 5:
-          x = np.mean(xarray)
-          y = np.mean(yarray)
+          x = xarray[len(xarray)-1]
+          y = yarray[len(yarray)-1]
           #print("Before smoothing in meters", [x,y])
           arraydist = np.round(smoothpoint(x,y),2)
           arraydistfeet = np.round([r*3.28084 for r in arraydist],2)
           #print("After smoothing in meters", arraydist)
           #print("After smoothing in feet", arraydistfeet)
           currentclosestspeaker = closestspeaker(arraydistfeet[0],arraydistfeet[1])
-          closestspeakerarray.append(currentclosestspeaker[0],currentclosestspeaker[1])
-
+          closestspeakerarray.append(currentclosestspeaker[0])
+          closestspeakerarray.append(currentclosestspeaker[1])
+          
       if len(closestspeakerarray) == 6:
           #print("Array of closest speakers is", closestspeakerarray)
           uniqueitems = Counter(closestspeakerarray).keys()
@@ -177,11 +182,11 @@ def on_message(mqttc, obj, msg):
                 closestspeakerarray = [el for el in closestspeakerarray if el != mode(closestspeakerarray)]
                 finalclosestspeaker.append(mode(closestspeakerarray))
                 #print("Closest speaker is", finalclosestspeaker)
-		Settings.MQTT_Lock.acquire()
+		        Settings.MQTT_Lock.acquire()
                 if sorted(Settings.MQTT_Speaker) != sorted(finalclosestspeaker):
-		    Settings.MQTT_Speaker = sorted(finalclosestspeaker)
+		            Settings.MQTT_Speaker = sorted(finalclosestspeaker)
                     Settings.MQTT_UpdateFlag = True
-		Settings.MQTT_Lock.release()
+		        Settings.MQTT_Lock.release()
 
       if len(xarray) > 5:
           xarray = []
