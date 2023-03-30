@@ -155,13 +155,16 @@ def ConvertSSToSpeaker(x, y):
 	return speakers
 
 def UserArrived(currentList, targetList):
-	if len(currentList) == 1:
-		if currentList[0] in targetList:
-			return True
-	elif len(currentList) == 2:
+	print("In UserArrived" + str(currentList))
+	if len(currentList) == 0:
+		return False
+	elif len(targetList) == 1:
 		if currentList[0] in targetList or currentList[1] in targetList:
 			return True
-		return False
+	elif len(targetList) == 2:
+		if currentList[0] in targetList and currentList[1] in targetList:
+			return True
+	return False
 
 # Tests
 if __name__ == '__main__':
