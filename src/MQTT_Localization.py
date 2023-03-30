@@ -185,6 +185,8 @@ def on_message(mqttc, obj, msg):
 		    Settings.MQTT_Speaker = sorted(finalclosestspeaker)
                     Settings.MQTT_UpdateFlag = True
 		Settings.MQTT_Lock.release()
+                closestspeakerarray = []
+
 
       if len(xarray) > 5:
           xarray = []
@@ -193,11 +195,6 @@ def on_message(mqttc, obj, msg):
 
       xarray.append(x)
       yarray.append(y)
-
-      if xarray == []:
-          xarray.append(x)
-      if yarray == []:
-          yarray.append(y)
                
 def on_publish(mqttc, obj, mid):
     print("mid: "+str(mid))
