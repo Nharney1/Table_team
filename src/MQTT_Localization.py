@@ -7,7 +7,7 @@ import numpy as np
 import math
 from collections import Counter
 from . import Settings
-from statistics import mode
+from statistics import mode, StatisticsError
 
 closestspeakerarray = []
 
@@ -135,10 +135,10 @@ def on_message(mqttc, obj, msg):
       r2 = abs(float(uwbdist.split(",")[1])) #COCONUT
       r3 = abs(float(uwbdist.split(",")[2])) #CARAMEL
       x1 = 0
-      y1 = 0
+      y1 = -0.1
       z1 = 0.762
       x2 = 1.9304 #76"
-      y2 = 0
+      y2 = -0.1
       z2 = 0.762
       x3 = 0.9602 #38.5"
       y3 = 1.0287#40.5"
@@ -168,7 +168,7 @@ def on_message(mqttc, obj, msg):
           closestspeakerarray.append(currentclosestspeaker[1])
           
       if len(closestspeakerarray) == 6:
-          #print("Array of closest speakers is", closestspeakerarray)
+          print("Array of closest speakers is", closestspeakerarray)
           uniqueitems = Counter(closestspeakerarray).keys()
           if len(uniqueitems) >= 5:
                 closestspeakerarray.pop(0)
@@ -176,15 +176,25 @@ def on_message(mqttc, obj, msg):
 
           else:
                 finalclosestspeaker = []
-                finalclosestspeaker.append(mode(closestspeakerarray))
-                closestspeakerarray = [el for el in closestspeakerarray if el != mode(closestspeakerarray)]
-                finalclosestspeaker.append(mode(closestspeakerarray))
-                #print("Closest speaker is", finalclosestspeaker)
-		Settings.MQTT_Lock.acquire()
-                if sorted(Settings.MQTT_Speaker) != sorted(finalclosestspeaker):
-		    Settings.MQTT_Speaker = sorted(finalclosestspeaker)
+                try:
+                    finalclosestspeaker.append(mode(closestspeakerarray))
+                    closestspeakerarray = [el for el in closestspeakerarray if el != mode(closestspeakerarray)]
+                    finalclosestspeaker.append(mode(closestspeakerarray))
+                except StatisticsError:
+                    temp = Counter(closestspeakerarray)
+                    finalclosestspeaker_freq = temp.most_common(2)
+                    finalclosestspeaker = [speak[0] for speak in finalclosestspeaker_freq]
+
+                print("Closest speaker is", finalclosestspeaker)
+                Settings.MQTT_Lock.acquire()
+                if sorted(Settings.MQTT_Speakers) != sorted(finalclosestspeaker):
+                    Settings.MQTT_Speakers = sorted(finalclosestspeaker)
                     Settings.MQTT_UpdateFlag = True
+<<<<<<< HEAD
 		Settings.MQTT_Lock.release()
+=======
+                Settings.MQTT_Lock.release()
+>>>>>>> c5112ef64180b6728e2c9d7b320dc5f68dbb0731
                 closestspeakerarray = []
 
 

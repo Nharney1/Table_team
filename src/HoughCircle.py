@@ -33,7 +33,7 @@ def DetectCircles() -> List[Ball]:
 		# Show the minimum and maximum location for balls (corners of table)
 		cv.circle(resize_img, (X_MIN, Y_MIN), 5, (255,0,0,), 5)
 		cv.circle(resize_img, (X_MAX,Y_MAX), 5, (255,0,0,), 5) 
-		cv.imshow('balls', resize_img) 
+		#cv.imshow('balls', resize_img) 
 		cv.waitKey(0)
 		#cv.destroyAllWindows()
 
@@ -69,9 +69,9 @@ def DetectCircles() -> List[Ball]:
 			temp_ball.SetColor()
 			Ball_list.append(temp_ball)
 
-			if SHOW_IMAGES: 
-				cv.imshow('balls', resize_img)
-				cv.waitKey(0)
+			#if SHOW_IMAGES: 
+				#cv.imshow('balls', resize_img)
+				#cv.waitKey(0)
 
 		cv.destroyAllWindows()
 
