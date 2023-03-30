@@ -230,13 +230,19 @@ class RealisticAI(PoolAI):
         total_operations = 0
         easy_shots : List[float] = self.generate_easy_shots(board)
 
-        offsets =  [val * 0.1 for val in range(-20, 20) ]
+        offsets =  [val * 0.03 for val in range(-75, 75) ]
 
         listOfShots = []
+        i = 0
         for magnitude in magnitudes:
-            for angle in easy_shots:
-                for val in offsets:
-                    listOfShots.append((magnitude, angle + val))
+            if i % 2:
+                for angle in easy_shots:
+                    for val in offsets:
+                        listOfShots.append((magnitude, angle + val))
+
+            i+=1
+            
+        easy_shot_short_circuit = False
         best_shot = None
         if easy_shots:
             multi_processing_shot.board = board
@@ -244,10 +250,11 @@ class RealisticAI(PoolAI):
             results = multi_processing_shot.run(listOfShots=listOfShots, position=position)
             total_operations += len(results)
             print("computed :" + str(len(results)) + " easy shots")
-            best_shot = max(results,key=itemgetter(0))
+            if results:
+                best_shot = max(results,key=itemgetter(0))
 
-            easy_shot_short_circuit = False
-            if best_shot[0] >= 35: easy_shot_short_circuit = True
+                
+                if best_shot[0] >= 35: easy_shot_short_circuit = True
 
         if not easy_shot_short_circuit:
             total_shot_list = []

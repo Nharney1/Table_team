@@ -145,19 +145,3 @@ def run(listOfShots, position):
         
         
         return list(outputList)
-    # with Pool() as processor_pool:
-    #     for shot in processor_pool.imap_unordered(partial(getShot, position=(position.x, position.y), shortCircuit=shortCircuit),listOfShots):
-    #         if shot is not None:
-    #             results.append(shot)
-    #             if shot[0] >= target_output_value:
-    #                 print('short circuit')
-    #                 break
-    #     processor_pool.close()
-    #     processor_pool.join()
-
-    print("finished")
-
-    # with Pool() as processor_pool:
-    #     results = processor_pool.imap_unordered(partial(getShot, position=(position.x, position.y)),listOfShots)
-    #     results = [x for x in results if x is not None]
-    #     return results
