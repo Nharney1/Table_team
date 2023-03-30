@@ -89,8 +89,8 @@ def smoothpoint(x,y):
     computedpoint = [x,y]
     leftedge = [0,abs(y)]
     topedge = [abs(x),0]
-    rightedge = [1.9304, abs(y)]
-    bottomedge = [abs(x), 1.0287]
+    rightedge = [1.9202, abs(y)]
+    bottomedge = [abs(x), 1.0972]
     edges = [leftedge, topedge, rightedge, bottomedge]
 
     #disttoedges = [0,0,0,0]
@@ -101,13 +101,13 @@ def smoothpoint(x,y):
     disttoedges = [distbetweenpoints(computedpoint, edge) for edge in edges]
     indexmindist = disttoedges.index(min(disttoedges))
     if indexmindist == 0:
-        smoothedpoint = [0, min(max(y,0),1.0287)]
+        smoothedpoint = [0, min(max(y,0),1.0972)]
     elif indexmindist == 1:
-        smoothedpoint = [min(max(x,0),1.9304), 0]
+        smoothedpoint = [min(max(x,0),1.9202), 0]
     elif indexmindist == 2:
-        smoothedpoint = [1.9304, min(max(y,0),1.0287)]
+        smoothedpoint = [1.9304, min(max(y,0),1.0972)]
     elif indexmindist == 3:
-        smoothedpoint = [min(max(x,0),1.9304),1.0287]
+        smoothedpoint = [min(max(x,0),1.9202),1.0972]
 
     return smoothedpoint
 
