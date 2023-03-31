@@ -11,8 +11,11 @@ from statistics import mode, StatisticsError
 
 WALK_TO_SPEAKER = 250
 ROTATE_TO_SPEAKER = 251
+STUCK_BEACON = 999
 
 closestspeakerarray = []
+xstuckcounter = 0
+ystuckcounter = 0
 
 def distbetweenpoints(p1,p2):
 	return math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
@@ -148,6 +151,8 @@ def on_message(mqttc, obj, msg):
       z3 = 0.762
       global xarray
       global yarray
+      global xstuckcounter
+      global ystuckcounter
 
       x,y = trilateration(x1,y1,r1,x2,y2,r2,x3,y3,r3)
       #x,y = trilateration3D(x1,y1,z1,r1,x2,y2,z2,r2,x3,y3,z3,r3)
@@ -161,6 +166,8 @@ def on_message(mqttc, obj, msg):
       if len(xarray) > 5:
           x = np.mean(xarray)
           y = np.mean(yarray)
+          xstuckcounter += len(set(xarray))
+          ystuckcounter += len(set(yarray))
           #print("Before smoothing in meters", [x,y])
           arraydist = np.round(smoothpoint(x,y),2)
           arraydistfeet = np.round([r*3.28084 for r in arraydist],2)
@@ -171,6 +178,12 @@ def on_message(mqttc, obj, msg):
           closestspeakerarray.append(currentclosestspeaker[1])
           
       if len(closestspeakerarray) == 6:
+          if xstuckcounter <= 3 or ystuckcounter <= 3:
+                ret = mqttc.publish("t/sd/feedback", STUCK_BEACON)
+                time.sleep(3)
+
+          xstuckcounter = 0
+          ystuckcounter = 0
           print("Array of closest speakers is", closestspeakerarray)
           uniqueitems = Counter(closestspeakerarray).keys()
           if len(uniqueitems) >= 5:
