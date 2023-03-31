@@ -150,7 +150,7 @@ def connect_and_run(dev=None, device_address=None):
     Settings.monitor.disconnect()
     Settings.monitor.quit()
 
-def Init_BLE():
+def InitBLE():
     # Discovery nearby heart rate monitors
     print("Scanning for devices")
     devices = scan_for_devices()

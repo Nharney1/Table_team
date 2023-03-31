@@ -16,7 +16,7 @@ def DetectCircles() -> List[Ball]:
 
 	dirname = os.path.dirname(__file__)
 
-	path = os.path.join(dirname, 'test_images/input_25.png')
+	path = os.path.join(dirname, 'test_images/input_23.png')
 	#path = '/home/table_team/input.png'
 	img = cv.imread(path, cv.IMREAD_COLOR)
 
@@ -33,9 +33,9 @@ def DetectCircles() -> List[Ball]:
 		# Show the minimum and maximum location for balls (corners of table)
 		cv.circle(resize_img, (X_MIN, Y_MIN), 5, (255,0,0,), 5)
 		cv.circle(resize_img, (X_MAX,Y_MAX), 5, (255,0,0,), 5) 
-		#cv.imshow('balls', resize_img) 
+		cv.imshow('balls', resize_img) 
 		cv.waitKey(0)
-		#cv.destroyAllWindows()
+		cv.destroyAllWindows()
 
 	# Convert to grayscale for the Hough Circle Transform
 	gray_img = cv.cvtColor(resize_img, cv.COLOR_BGR2GRAY)
@@ -69,10 +69,9 @@ def DetectCircles() -> List[Ball]:
 			temp_ball.SetColor()
 			Ball_list.append(temp_ball)
 
-			#if SHOW_IMAGES: 
-				#cv.imshow('balls', resize_img)
-				#cv.waitKey(0)
+			if SHOW_IMAGES: 
+				cv.imshow('balls', resize_img)
+				cv.waitKey(0)
 
 		cv.destroyAllWindows()
-
 		return Ball_list

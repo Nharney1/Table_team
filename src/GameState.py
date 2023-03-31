@@ -1,3 +1,15 @@
+from .Ball import BallColor
+
+GAME_BALL_MADE = 200
+OPPONENT_BALL_MADE = 201
+BLACK_AND_WHITE = 202
+BLACK_BEFORE_GAME_BALLS = 203
+BLACK_BALL_WINNER  = 204
+SCRATCH  = 205
+NOTHING = 206
+
+command_list  = []
+
 class InvalidBallCount(Exception):
 	pass
 
@@ -8,14 +20,18 @@ def DetermineShotOutcome(previousShot, currentShot):
 	p_blue = 0
 
 	for ball in previousShot:
-		if ball.color == 'black':
+		if ball.color == BallColor.BLACK:
 			p_black += 1
-		if ball.color == 'white':
+			print("Got  black")
+		if ball.color == BallColor.WHITE:
 			p_white += 1
-		if ball.color == 'green':
+			print('Got  white')
+		if ball.color == BallColor.GREEN:
 			p_green += 1
-		if ball.color == 'blue':
+			print('Got  green')
+		if ball.color == BallColor.BLUE:
 			p_blue += 1
+			print("Got blue")
 
 	c_black = 0
 	c_white = 0
@@ -23,13 +39,13 @@ def DetermineShotOutcome(previousShot, currentShot):
 	c_blue = 0
 
 	for ball in currentShot:
-		if ball.color == 'black':
+		if ball.color == BallColor.BLACK:
 			c_black += 1
-		if ball.color == 'white':
+		if ball.color == BallColor.WHITE:
 			c_white += 1
-		if ball.color == 'green':
+		if ball.color == BallColor.GREEN:
 			c_green += 1
-		if ball.color == 'blue':
+		if ball.color == BallColor.BLUE:
 			c_blue += 1
 
 	if p_black > 1 or p_white > 1 or c_black > 1 or c_white > 1:
@@ -40,22 +56,24 @@ def DetermineShotOutcome(previousShot, currentShot):
 	if c_blue < p_blue:
 		for i in range (p_blue - c_blue):
 			print("Game ball made!")
+			command_list.append(GAME_BALL_MADE)
 	if c_green < p_green:
 		for i in range (p_green - c_green):
 			print("Opponent ball made!")
+			command_list.append(OPPONENT_BALL_MADE)
 
 	# Check if there is an end game scenario
 	if c_black == 0 and c_white == 0:
 		print("Sunk black and white ball")
-		return 'loss'
+		command_list.append(BLACK_AND_WHITE)
 	elif c_black == 0 and c_blue > 0:
 		print("Sunk black ball before all game balls were sunk")
-		return 'loss'
+		command_list.append(BLACK_BEFORE_GAME_BALLS)
 	elif c_black == 0 and c_white == 1 and c_blue == 0:
 		print("Sunk the black ball, winner!")
-		return 'win'
+		command_list.append(BLACK_BALL_WINNER)
 	elif c_black == 1 and c_white == 0:
 		print("Scratch: sunk the white ball")
-		return 'continue'
-	else:
-		return 'continue'
+		command_list.append(SCRATCH)
+
+	return command_list

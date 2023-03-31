@@ -9,6 +9,9 @@ from collections import Counter
 from . import Settings
 from statistics import mode, StatisticsError
 
+WALK_TO_SPEAKER = 250
+ROTATE_TO_SPEAKER = 251
+
 closestspeakerarray = []
 
 def distbetweenpoints(p1,p2):
@@ -190,16 +193,16 @@ def on_message(mqttc, obj, msg):
                 if sorted(Settings.MQTT_Speakers) != sorted(finalclosestspeaker):
                     Settings.MQTT_Speakers = sorted(finalclosestspeaker)
                     Settings.MQTT_UpdateFlag = True
-		        Settings.MQTT_Lock.release()
+                Settings.MQTT_Lock.release()
 
-        closestspeakerarray = []
-        if len(xarray) > 5:
-            xarray = []
-        if len(yarray) > 5:
-            yarray = []
+                closestspeakerarray = []
+                if len(xarray) > 5:
+                    xarray = []
+                if len(yarray) > 5:
+                    yarray = []
 
-        xarray.append(x)
-        yarray.append(y)
+                xarray.append(x)
+                yarray.append(y)
                
 def on_publish(mqttc, obj, mid):
     print("mid: "+str(mid))
