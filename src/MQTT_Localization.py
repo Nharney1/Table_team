@@ -11,7 +11,7 @@ from statistics import mode, StatisticsError
 
 WALK_TO_SPEAKER = 250
 ROTATE_TO_SPEAKER = 251
-STUCK_BEACON = 299
+STUCK_BEACON = 999
 
 closestspeakerarray = []
 xstuckcounter = 0
