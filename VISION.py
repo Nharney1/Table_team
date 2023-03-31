@@ -3,7 +3,7 @@ from src.HoughCircle import DetectCircles
 from src.AnkerCameraLibrary import AnkerCamera
 from src.BluetoothServer import BluetoothServerSocket
 from src.GameState import InvalidBallCount, DetermineShotOutcome
-from src.BLEComms import Init_BLE, SendCommand, SEND_SPEAKERS
+from src.BLEComms import Init_BLE, SendCommand, SendCommandNoArgs, SEND_SPEAKERS, STOP_SPEAKERS
 from src.ShotSelectionHelper import computeShot
 from src.Speakers import DetermineNextSpeaker, ConvertSSToSpeaker, UserArrived
 
@@ -73,6 +73,8 @@ def main():
 			print("Target speakers: " + str(Temp_Target_Speakers))
 			SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
 
+		# User is in the correct location, now orient the user
+		SendCommandNoArgs(STOP_SPEAKERS)
 		print("USER TAKE SHOT")
 		break
 		
