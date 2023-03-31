@@ -30,7 +30,7 @@ from src.GameState import (InvalidBallCount,
 						   SCRATCH,
 						   NOTHING)
 
-from src.MQTT_Localization import (MQTT_Main
+from src.MQTT_Localization import (MQTT_Main,
 								   WALK_TO_SPEAKER,
 								   ROTATE_TO_SPEAKER)
 
@@ -67,7 +67,6 @@ def main():
 		Target_Speakers = ConvertSSToSpeaker(computedShot.playerPos[0], computedShot.playerPos[1])
 		Target_Speakers.sort()
 		print("Final Target Speakers: " + str(Target_Speakers))
-
 		while not UserArrived(Current_Speakers, Target_Speakers):
 			# Get current position represented as speakers
 			Settings.MQTT_Lock.acquire()
