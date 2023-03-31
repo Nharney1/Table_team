@@ -32,7 +32,7 @@ def main():
 
 	#Initialize connections
 	Settings.InitializeGlobals()
-	myCam = AnkerCamera(-1) # 1 on Jetson Nano; 2 on laptop
+	myCam = AnkerCamera(-1)
 	myCam.take_video()
 	cv2.destroyAllWindows()
 	Init_BLE()
@@ -54,7 +54,7 @@ def main():
 		Target_Speakers.sort()
 		print("Final Target Speakers: " + str(Target_Speakers))
 
-		while not  UserArrived(Current_Speakers, Target_Speakers):
+		while not UserArrived(Current_Speakers, Target_Speakers):
 
 			# Get current position represented as speakers
 			Settings.MQTT_Lock.acquire()
@@ -75,6 +75,7 @@ def main():
 
 		print("USER TAKE SHOT")
 		break
+		
 		#if Previous_Ball_List is not None:
 			#try:
 				#ret = DetermineShotOutcome(Previous_Ball_List, Current_Ball_List)
