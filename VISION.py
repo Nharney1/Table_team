@@ -1,21 +1,38 @@
-from src.ComputedShot import ComputedShot
-from src.HoughCircle import DetectCircles
-from src.AnkerCameraLibrary import AnkerCamera
-from src.BluetoothServer import BluetoothServerSocket
-from src.GameState import InvalidBallCount, DetermineShotOutcome, GAME_BALL_MADE, OPPONENT_BALL_MADE, BLACK_AND_WHITE, BLACK_BEFORE_GAME_BALLS, BLACK_BALL_WINNER, SCRATCH, NOTHING
-from src.BLEComms import InitBLE, SendCommand, SendCommandNoArgs, SEND_SPEAKERS, STOP_SPEAKERS
-from src.ShotSelectionHelper import computeShot
-from src.Speakers import DetermineNextSpeaker, ConvertSSToSpeaker, UserArrived
-from src.MQTT_Localization import MQTT_Main, WALK_TO_SPEAKER, ROTATE_TO_SPEAKER
-
-from src import Settings
-
 import time
 import cv2
 import threading
 import paho.mqtt.client as mqtt
-import threading
-import paho.mqtt.client as mqtt
+
+from src import Settings
+from src.ComputedShot import ComputedShot
+from src.HoughCircle import DetectCircles
+from src.AnkerCameraLibrary import AnkerCamera
+from src.BluetoothServer import BluetoothServerSocket
+from src.ShotSelectionHelper import computeShot
+
+from src.BLEComms import (InitBLE,
+						  SendCommand,
+						  SendCommandNoArgs,
+						  SEND_SPEAKERS,
+						  STOP_SPEAKERS)
+
+from src.Speakers import (DetermineNextSpeaker,
+						  ConvertSSToSpeaker,
+						  UserArrived)
+
+from src.GameState import (InvalidBallCount,
+						   DetermineShotOutcome,
+						   GAME_BALL_MADE,
+						   OPPONENT_BALL_MADE,
+						   BLACK_AND_WHITE,
+						   BLACK_BEFORE_GAME_BALLS,
+						   BLACK_BALL_WINNER,
+						   SCRATCH,
+						   NOTHING)
+
+from src.MQTT_Localization import (MQTT_Main
+								   WALK_TO_SPEAKER,
+								   ROTATE_TO_SPEAKER)
 
 def main():
 	# Game variables
