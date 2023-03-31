@@ -10,6 +10,7 @@ from enum import IntEnum
 from . import Settings
 
 SEND_SPEAKERS = 100
+STOP_SPEAKERS = 100
 RESUME_GAME = 101
 PAUSE_GAME = 102
 END_GAME = 103
@@ -175,4 +176,8 @@ def SendCommand(command, argList):
             # We need to play two different speakers
             Settings.esp_char.write_value(argList[0].to_bytes(1,byteorder='big', signed=False))
             Settings.esp_char.write_value(argList[1].to_bytes(1,byteorder='big', signed=False))
+
+def SendCommandNoArgs(command):
+    if command == STOP_SPEAKERS:
+        Settings.esp_char.write_value(STOP_SPEAKERS.to_bytes(1,byteorder='big', signed=False))
 
