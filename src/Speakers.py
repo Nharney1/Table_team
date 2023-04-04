@@ -1,8 +1,160 @@
+import math
+from ComputedShot import ComputedShot
+
+
 x_min = 0
 x_max = 6.33333
 y_min = 0
 y_max = 3.58333
 offset = .2
+
+def DetermineAngleSpeaker(current, computed_shot: ComputedShot):
+	# Determine the the speaker(s) to play in order
+	# to guide the user toward the relative_angle of their shot
+	# current is the number of the current speaker you are on
+	speaker_set = {
+		1 : (0,0),
+		2 : (x_max / 5, 0),
+		3 : (x_max / 2, 0),
+		4 : ((4 * x_max) / 5, 0),
+		5 : (x_max, 0),
+		6 : (x_max, y_max / 2),
+		7 : (x_max, y_max),
+		8 : ((4 * x_max) / 5, y_max),
+		9 : (x_max / 2, y_max),
+		10 : (x_max / 5, y_max),
+		11 : (0, y_max),
+		12 : (0, y_max / 2),
+	}
+
+	angles = {}
+	player_x, player_y = speaker_set[current]
+
+	# edge cases with 0, 90, or -90 degrees
+
+	straight_angle = None
+	if abs(computed_shot.relativeAngle) < 5: straight_angle = 0
+	if abs(computed_shot.relativeAngle - 90) < 5: straight_angle = 90
+	if abs(computed_shot.relativeAngle + 90) < 5: straight_angle = -90
+
+	if straight_angle is not None:
+		if computed_shot.wallNumber == 1:
+			if straight_angle == -90:
+				return [7]
+			elif straight_angle == 90:
+				return[5]
+			elif straight_angle == 0:
+				if current == 7:
+					return[11]
+				elif current == 5:
+					return [1]
+		elif computed_shot.wallNumber == 2:
+			if straight_angle == -90:
+				return [5]
+			elif straight_angle == 90:
+				return[1]
+			elif straight_angle == 0:
+				if current == 1:
+					return [11]
+				elif current == 5:
+					return [7]
+		elif computed_shot.wallNumber == 3:
+			if straight_angle == -90:
+				return [1]
+			elif straight_angle == 90:
+				return[11]
+			elif straight_angle == 0:
+				if current == 1:
+					return [5]
+				elif current == 11:
+					return [7]
+		elif computed_shot.wallNumber == 4:
+			if straight_angle == -90:
+				return [11]
+			elif straight_angle == 90:
+				return[7]
+			elif straight_angle == 0:
+				if current == 11:
+					return [1]
+				elif current == 7:
+					return [5]
+		
+		
+	# Compute angle between player and pocket
+	for speaker_num in range(1, 13):
+
+		if current == speaker_num: continue
+
+		angle = None
+		speaker_x, speaker_y = speaker_set[speaker_num]
+
+		if computed_shot.wallNumber == 2 or computed_shot.wallNumber == 4:
+
+			opposite = -(speaker_y - player_y)
+			adjacent = speaker_x - player_x
+
+			if adjacent == 0:
+				angle = 0
+			elif opposite == 0:
+				angle = None
+				if adjacent > 0:
+					angle = 90
+				else:
+					angle = -90
+				if computed_shot.wallNumber == 2:
+					angle *= -1
+			else:
+				angle = math.atan(opposite / adjacent)
+				angle = math.degrees(angle)
+				if angle < 0:
+					angle = -90 - angle
+				else:
+					angle = 90 - angle
+		else:
+			opposite = speaker_x - player_x
+			adjacent = -(speaker_y - player_y)
+
+			if adjacent == 0:
+				angle = 0
+			elif opposite == 0:
+				if adjacent > 0:
+					angle = 90
+				else:
+					angle = -90
+				if computed_shot.wallNumber == 3:
+					angle *= -1
+			else:
+				angle = math.atan(opposite / adjacent)
+				angle = math.degrees(angle)
+				if angle < 0:
+					angle = -90 - angle
+				else:
+					angle = 90 - angle
+				angle *= -1
+
+		angles[speaker_num] = angle
+			
+	# Find closest angle
+	rounded_angle = round(computed_shot.relativeAngle, 1)
+	lower_bound = None
+	upper_bound = None
+
+	for speaker_num in angles:
+		speaker_angle = round(angles[speaker_num], 1)
+
+		if abs(speaker_angle - rounded_angle) < 5:
+			return [speaker_num]
+		
+		if speaker_angle < rounded_angle:
+			if (lower_bound is None or
+				(rounded_angle - speaker_angle) < (rounded_angle - angles[lower_bound])):
+				lower_bound = speaker_num
+		elif speaker_angle > rounded_angle:
+			if (upper_bound is None or
+				(speaker_angle - rounded_angle) < (angles[upper_bound] - rounded_angle)):
+				upper_bound = speaker_num
+
+	return [lower_bound, upper_bound]
 
 def DetermineNextSpeaker(current, target):
 	# Clockwise movement of corners
@@ -247,3 +399,27 @@ if __name__ == '__main__':
 	print("Expected 6 got: " + str(ConvertSSToSpeaker(6.3,1.5)))
 	print("Expected 6 and 7 got: " + str(ConvertSSToSpeaker(6.3,2.3)))
 	print("Expected 6 and 7 got: " + str(ConvertSSToSpeaker(6.3,2.5)))
+
+	# Angle tests
+	shot = ComputedShot((x_max, y_max), -45, 4, 10)
+	print("Expected speaker 3, got: " + str(DetermineAngleSpeaker(7, shot)))
+	shot = ComputedShot((x_max / 2, 0), -45, 2, 10)
+	print("Expected speaker 7, got: " + str(DetermineAngleSpeaker(3, shot)))
+	shot = ComputedShot((x_max, y_max / 2), 8, 1, 10)
+	print("Expected speaker 12 and 1, got: " + str(DetermineAngleSpeaker(6, shot)))
+	shot = ComputedShot((0, y_max / 2), 8, 3, 10)
+	print("Expected speaker 6 and 7, got: " + str(DetermineAngleSpeaker(12, shot)))
+	shot = ComputedShot((x_max / 5, y_max), 0, 4, 10)
+	print("Expected speaker 2, got: " + str(DetermineAngleSpeaker(10, shot)))
+	shot = ComputedShot((4 * x_max / 5, 0), 0, 2, 10)
+	print("Expected speaker 8, got: " + str(DetermineAngleSpeaker(4, shot)))
+	shot = ComputedShot((4 * x_max / 5, 0), 10, 2, 10)
+	print("Expected speaker 8 and 9, got: " + str(DetermineAngleSpeaker(4, shot)))
+	shot = ComputedShot((x_max, y_max), 0, 1, 10)
+	print("Expected speaker 11, got: " + str(DetermineAngleSpeaker(7, shot)))
+	shot = ComputedShot((x_max, y_max), 0, 4, 10)
+	print("Expected speaker 5, got: " + str(DetermineAngleSpeaker(7, shot)))
+
+
+
+	 

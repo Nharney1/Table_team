@@ -271,23 +271,3 @@ def lineSweep(start_seg, stop_seg, angle, angle_increase):
 
     return end_pos            
     
-# def checkClearPath(shot: Shot, balls: List[Ball]):
-#     # Loops through balls and raycasts to check for
-#     # collisions
-    
-#     # create unit vector
-#     origin_x, origin_y = shot.cue_ball_position
-#     unit_vector = (cos(radians(shot.angle)), sin(radians(shot.angle)))
-
-#     for ball in balls:
-#         if ball.number == 0: continue
-#         ball_center_x, ball_center_y = ball.position
-#         origin_to_ball_vector = (origin_x - ball_center_x, origin_y - ball_center_y)
-#         mag_bal_vector = sqrt(pow(origin_to_ball_vector[0], 2) + pow(origin_to_ball_vector[1], 2))
-#         # get dot product
-#         intersection = unit_vector[0] * origin_to_ball_vector[0] + unit_vector[1] * origin_to_ball_vector[1]
-#         b = sqrt(pow(mag_bal_vector,2) - pow(intersection, 2)) 
-#         if b < Constants.BALL_RADIUS:
-#             return False
-    
-#     return True
