@@ -18,7 +18,8 @@ from src.BLEComms import (InitBLE,
 
 from src.Speakers import (DetermineNextSpeaker,
 						  ConvertSSToSpeaker,
-						  UserArrived)
+						  UserArrived,
+						  DetermineAngleSpeaker)
 
 from src.GameState import (InvalidBallCount,
 						   DetermineShotOutcome,
@@ -44,6 +45,7 @@ def main():
 	Guidance_Speakers = []
 	Swift_Commands = []
 	Rotation_Speakers = []
+	Angle_Speakers = []
 	
 	#Initialize connections
 	Settings.InitializeGlobals()
@@ -88,11 +90,10 @@ def main():
 
 		# User is in the correct location, now orient the user
 		SendCommandNoArgs(STOP_SPEAKERS)
-		ret  = mqttc.publish("t/sd/feedback", ROTATE_TO_SPEAKER)
+		mqttc.publish("t/sd/feedback", ROTATE_TO_SPEAKER)
 		time.sleep(3)
-		#Rotation_Speakers = AARON'S CODE TO DETERMINE SPEAKER 
+		Rotation_Speakers = DetermineAngleSpeaker(Current_Speakers[0], computedShot)
 		SendCommand(SEND_SPEAKERS, Rotation_Speakers)
-		print("USER ROTATING")
 		time.sleep(10)
 		SendCommandNoArgs(STOP_SPEAKERS)
 		##### SHOT IS TAKEN AT THIS POINT #####
