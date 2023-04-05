@@ -109,6 +109,7 @@ def getShot(shot, position, shortCircuit : mp.Event):
         if shot_verifier.verifyShotReachable(shot, board.balls):
             output = compute_shot_heuristic(shot=shot, original_board=board)
             return output
+        
 def worker(i, shortCircuit, position, listOfShots, output_list, start_index, end_index):
 
     for index in range(start_index, end_index):
@@ -116,7 +117,10 @@ def worker(i, shortCircuit, position, listOfShots, output_list, start_index, end
                 shot = listOfShots[index]
                 output = getShot(shot, position, shortCircuit)
                 if output is not None:
-                    if output[0] >= 35:
+                    if board.player1_pocketed == 7:
+                        if output[0] >= 1000:
+                            shortCircuit.set()
+                    elif output[0] >= 35:
                         shortCircuit.set()
                     output_list.append(output)
     

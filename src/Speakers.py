@@ -8,7 +8,7 @@ y_min = 0
 y_max = 3.58333
 offset = .2
 
-def DetermineAngleSpeaker(current, computed_shot: ComputedShot):
+def DetermineAngleSpeaker(current_speaker_list : list, computed_shot: ComputedShot):
 	# Determine the the speaker(s) to play in order
 	# to guide the user toward the relative_angle of their shot
 	# current is the number of the current speaker you are on
@@ -28,7 +28,25 @@ def DetermineAngleSpeaker(current, computed_shot: ComputedShot):
 	}
 
 	angles = {}
-	player_x, player_y = speaker_set[current]
+	player_x, player_y = computed_shot.playerPos
+	current = None
+
+	# Find which speaker is closer to the player
+	if len(current_speaker_list) == 1:
+		current = current_speaker_list[0]
+	else:
+		speaker_1 = current_speaker_list[0]
+		speaker_2 = current_speaker_list[1]
+
+		speaker_1_x, speaker_1_y = speaker_set[speaker_1]
+		speaker_2_x, speaker_2_y = speaker_set[speaker_2]
+
+		dist_1 = math.sqrt(math.pow(player_x - speaker_1_x, 2) + math.pow(player_y - speaker_1_y, 2))
+		dist_2 = math.sqrt(math.pow(player_x - speaker_2_x, 2) + math.pow(player_y - speaker_2_y, 2))
+
+		current = speaker_1 if dist_1 < dist_2 else speaker_2
+
+
 
 	# edge cases with 0, 90, or -90 degrees
 
@@ -402,23 +420,28 @@ if __name__ == '__main__':
 
 	# Angle tests
 	shot = ComputedShot((x_max, y_max), -45, 4, 10)
-	print("Expected speaker 3, got: " + str(DetermineAngleSpeaker(7, shot)))
+	print("Expected speaker 3, got: " + str(DetermineAngleSpeaker([7], shot)))
 	shot = ComputedShot((x_max / 2, 0), -45, 2, 10)
-	print("Expected speaker 7, got: " + str(DetermineAngleSpeaker(3, shot)))
+	print("Expected speaker 7, got: " + str(DetermineAngleSpeaker([3], shot)))
 	shot = ComputedShot((x_max, y_max / 2), 8, 1, 10)
-	print("Expected speaker 12 and 1, got: " + str(DetermineAngleSpeaker(6, shot)))
+	print("Expected speaker 12 and 1, got: " + str(DetermineAngleSpeaker([6], shot)))
 	shot = ComputedShot((0, y_max / 2), 8, 3, 10)
-	print("Expected speaker 6 and 7, got: " + str(DetermineAngleSpeaker(12, shot)))
+	print("Expected speaker 6 and 7, got: " + str(DetermineAngleSpeaker([12], shot)))
 	shot = ComputedShot((x_max / 5, y_max), 0, 4, 10)
-	print("Expected speaker 2, got: " + str(DetermineAngleSpeaker(10, shot)))
+	print("Expected speaker 2, got: " + str(DetermineAngleSpeaker([10], shot)))
 	shot = ComputedShot((4 * x_max / 5, 0), 0, 2, 10)
-	print("Expected speaker 8, got: " + str(DetermineAngleSpeaker(4, shot)))
+	print("Expected speaker 8, got: " + str(DetermineAngleSpeaker([4], shot)))
 	shot = ComputedShot((4 * x_max / 5, 0), 10, 2, 10)
-	print("Expected speaker 8 and 9, got: " + str(DetermineAngleSpeaker(4, shot)))
+	print("Expected speaker 8 and 9, got: " + str(DetermineAngleSpeaker([4], shot)))
 	shot = ComputedShot((x_max, y_max), 0, 1, 10)
-	print("Expected speaker 11, got: " + str(DetermineAngleSpeaker(7, shot)))
+	print("Expected speaker 11, got: " + str(DetermineAngleSpeaker([7], shot)))
 	shot = ComputedShot((x_max, y_max), 0, 4, 10)
-	print("Expected speaker 5, got: " + str(DetermineAngleSpeaker(7, shot)))
+	print("Expected speaker 5, got: " + str(DetermineAngleSpeaker([7], shot)))
+	shot = ComputedShot((x_max / 2, 0), 0, 2, 10)
+	print("Expected speaker 9, got: " + str(DetermineAngleSpeaker([3], shot)))
+	shot = ComputedShot((x_max / 2, 0), 0, 2, 10)
+	print("Expected speaker 9, got: " + str(DetermineAngleSpeaker([3,4], shot)))
+
 
 
 
