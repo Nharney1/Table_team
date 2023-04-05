@@ -93,7 +93,7 @@ def main():
 		SendCommandNoArgs(STOP_SPEAKERS)
 		mqttc.publish("t/sd/feedback", ROTATE_TO_SPEAKER)
 		time.sleep(3)
-		Rotation_Speakers = DetermineAngleSpeaker(Current_Speakers[0], computedShot)
+		Rotation_Speakers = DetermineAngleSpeaker(Current_Speakers, computedShot)
 		print(Rotation_Speakers)
 		SendCommand(SEND_SPEAKERS, Rotation_Speakers)
 		time.sleep(10)
