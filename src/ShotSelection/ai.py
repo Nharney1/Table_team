@@ -157,11 +157,13 @@ class RealisticAI(PoolAI):
 
     def name(self) -> str:
         return "realistic"
+    
     def generate_easy_shots(self, board: pool_objets.PoolBoard):
         angles = []
         for ball in board.balls:
+            
             if board.turn == pool_objets.PoolPlayer.PLAYER1:
-                if ball.pocketed == False and ball.number > 0 and ball.number < 8:
+                if ball.pocketed == False and ball.number > 0 and ball.number < 9:
                     vector2 = (ball.position.x - board.cue_ball.position.x, ball.position.y - board.cue_ball.position.y)
                     vector1 = (1,0) 
                     angle = math.atan2(vector2[0], vector2[1]) - math.atan2(vector1[0], vector1[1])
@@ -170,7 +172,7 @@ class RealisticAI(PoolAI):
                     angle = (angle + 360) % 360
                     angles.append(round(angle, 2))
             else:
-                if ball.pocketed == False and ball.number > 8 and ball.number < 16:
+                if ball.pocketed == False and ball.number > 7 and ball.number < 16:
                     vector2 = (ball.position.x - board.cue_ball.position.x, ball.position.y - board.cue_ball.position.y)
                     vector1 = (1,0) 
                     angle = math.atan2(vector2[0], vector2[1]) - math.atan2(vector1[0], vector1[1])
@@ -253,10 +255,12 @@ class RealisticAI(PoolAI):
             if results:
                 best_shot = max(results,key=itemgetter(0))
 
-                
-                if best_shot[0] >= 35: easy_shot_short_circuit = True
+                if board.player1_pocketed == 7:
+                    if best_shot[0] >= 1000: easy_shot_short_circuit = True
+                elif best_shot[0] >= 35: easy_shot_short_circuit = True
 
         if not easy_shot_short_circuit:
+
             total_shot_list = []
             for magnitude in magnitudes:
                 for angle in range(360 * 2):
@@ -279,51 +283,7 @@ class RealisticAI(PoolAI):
         print("total time: " + str(total_time))
         print("time per operation: " + str(total_time / total_operations))
         return [comp_shot]
-        # for magnitude in magnitudes:
-        #     for angle in easy_shots:
-        #         #lower_angle, higher_angle = angle - 0.5, angle + 0.5
-        #         for val in offsets:
-
-        #             shot = pool_objets.Shot(angle + val, magnitude, position)  
-                    
-        #             if shot_verifier.verifyShotReachable(shot, board.balls):
-
-        #                 shot = self.compute_shot_heuristic(shot, board) 
-        #                 print("Current heureistic" + str(shot.heuristic))
-
-        #                 if shot.heuristic >= 35:
-        #                     print("short circuit, good shot found")
-        #                     return [shot]
-        #                 heapq.heappush(queue, shot)
-
-        # for magnitude in magnitudes:
-        #     for angle in range(360):     
-        #         if len(queue) % 50 == 0:
-        #             print(f"Shots generated: {len(queue)}")
-        #         shot = pool_objets.Shot(angle, magnitude, position)
-            
-                
-        #         if shot_verifier.verifyShotReachable(shot, board.balls):
-        #             shot = self.compute_shot_heuristic(shot, board)
-        #             for easy_angle in easy_shots:
-        #                 great_shot_lower, great_shot_higher = easy_angle - 1, easy_angle + 1
-        #                 good_shot_lower, good_shot_higher = easy_angle - 2, easy_angle + 2
-                        
-        #                 if angle > great_shot_lower and angle < great_shot_higher:
-        #                     shot.heuristic += Weights.GREAT_SHOT
-        #                     break     
-        #                 elif angle > good_shot_lower and angle < good_shot_higher:
-        #                     shot.heuristic += Weights.GOOD_SHOT
-        #                     break   
-        #             if shot.heuristic >= 20:
-        #                 print("short circuit, good shot found")
-        #                 return [shot]
-
-        #             heapq.heappush(queue, shot)
-        # shots = []
-        # for _ in range(length):
-        #     shots.append(heapq.heappop(queue))
-        # return shots
+       
 
     def compute_shot_heuristic(self, shot : pool_objets.Shot, original_board : pool_objets.PoolBoard) -> pool_objets.ComparableShot:
 
