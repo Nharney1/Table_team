@@ -1,5 +1,5 @@
 import math
-from ComputedShot import ComputedShot
+from .ComputedShot import ComputedShot
 
 
 x_min = 0

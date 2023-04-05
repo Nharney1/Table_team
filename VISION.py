@@ -1,6 +1,7 @@
 import time
 import cv2
 import threading
+import sys
 import paho.mqtt.client as mqtt
 
 from src import Settings
@@ -85,7 +86,7 @@ def main():
 			Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
 			print("Target speakers: " + str(Temp_Target_Speakers))
 			SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
-			ret = mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
+			mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
 			time.sleep(3)
 
 		# User is in the correct location, now orient the user
@@ -93,31 +94,35 @@ def main():
 		mqttc.publish("t/sd/feedback", ROTATE_TO_SPEAKER)
 		time.sleep(3)
 		Rotation_Speakers = DetermineAngleSpeaker(Current_Speakers[0], computedShot)
+		print(Rotation_Speakers)
 		SendCommand(SEND_SPEAKERS, Rotation_Speakers)
 		time.sleep(10)
 		SendCommandNoArgs(STOP_SPEAKERS)
 		##### SHOT IS TAKEN AT THIS POINT #####
-
+		for i in range(15):
+			time.sleep(1)
+			print("Taking shot")
 		# Current shot is complete, store current game state
 		Previous_Ball_List = Current_Ball_List
 		for i in range(3):
 			myCam.take_picture()
 		Current_Ball_List =  DetectCircles()
-
-		if not Previous_Ball_List:
+		print("Detecting circles")
+		if Previous_Ball_List:
+			print("Here")
 			try:
 				Swift_Commands = DetermineShotOutcome(Previous_Ball_List, Current_Ball_List)
 				if len(Swift_Commands) ==  0:
-					ret = mqttc.publish("t/sd/feedback", NOTHING)
+					mqttc.publish("t/sd/feedback", NOTHING)
 				else:
 					for command in Swift_Commands:
-						ret= mqttc.publish("t/sd/feedback",commad)
+						mqttc.publish("t/sd/feedback",command)
 						time.sleep(3)
+				if BLACK_BALL_WINNER  in  Swift_Commands:
+					SendCommandNoArgs(STOP_SPEAKERS)
+					sys.exit()
 			except InvalidBallCount:
 				print("Invalid ball count, something is wrong")
-			break
-		cv2.destroyAllWindows()
-		break
 
 	myCam.shutdown()
 	quit()
