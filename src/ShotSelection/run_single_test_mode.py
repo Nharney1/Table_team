@@ -19,7 +19,7 @@ from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE, RESIZABLE, VIDEORESIZE)
 import pygame.time
 
 
-def runSingleTestMode(balls, cueBall, magnitudes, angles, pool_sim: Pool, turn: PoolPlayer = None):
+def runSingleTestMode(balls, cueBall : CueBall, magnitudes, angles, pool_sim: Pool, turn: PoolPlayer = None):
         
         player1 = ai.RealisticAI(PoolPlayer.PLAYER1, magnitudes, angles)
         shot_queue = []
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     ##########################################
 
     pool = Pool(slowMotion=False, graphics=True)
-    magnitudes=[45, 75, 90]
+    magnitudes=[5, 8, 10, 12, 15]
     angles=range(0, 360, 1)
     
     ballsProd = [

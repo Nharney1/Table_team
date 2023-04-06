@@ -154,9 +154,9 @@ class Pool:
         
         return PoolBoard(CueBall([Constants.TABLE_WIDTH * 0.75, mid_y]), balls)
 
-    def productionMode(self):
-        player1 = ai.RealisticAI(PoolPlayer.PLAYER1)
-        player2 = ai.RealisticAI(PoolPlayer.PLAYER2)
+    def productionMode(self, magnitudes, angles):
+        player1 = ai.RealisticAI(PoolPlayer.PLAYER1, magnitudes, angles)
+        player2 = ai.RealisticAI(PoolPlayer.PLAYER2, magnitudes, angles)
         shot_queue = []
         ai_thinking = False
         simulating = False
@@ -279,8 +279,10 @@ class Pool:
 if __name__ == "__main__":
     
     # production mode
+    # magnitudes=[5, 8, 10, 12, 15]
+    # angles=range(0, 360, 1)
     # pool = Pool(slowMotion=False, graphics=False)
-    # pool.productionMode()
+    # pool.productionMode(magnitudes, angles)
     # test mode
     pool = Pool(slowMotion=False, graphics=True)
     magnitudes=[5, 8, 10, 12, 15]
