@@ -72,42 +72,43 @@ def main():
 		Target_Speakers.sort()
 		print("Final Target Speakers: " + str(Target_Speakers))
 
-		cont = True
-		while cont:
-			if UserArrived(Current_Speakers, Target_Speakers):
-				cont = False
-				break
-			while not UserArrived(Current_Speakers, Temp_Target_Speakers):
-				# Get current speakers
-				Settings.MQTT_Lock.acquire()
+		# cont = True
+		# while cont:
+		# 	if UserArrived(Current_Speakers, Target_Speakers):
+		# 		cont = False
+		# 		break
+		# 	while not UserArrived(Current_Speakers, Temp_Target_Speakers):
+		# 		# Get current speakers
+		# 		Settings.MQTT_Lock.acquire()
+		# 		Current_Speakers = Settings.MQTT_Speakers
+		# 		Settings.MQTT_UpdateFlag = False
+		# 		Settings.MQTT_Lock.release()
+
+		# 		Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
+		# 		print("Temp target speakers: " + str(Temp_Target_Speakers))
+		# 		SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
+		# 		mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
+		# 		time.sleep(4)
+		# 		break
+
+		while not UserArrived(Current_Speakers, Target_Speakers):
+			# Get current position represented as speakers
+			Settings.MQTT_Lock.acquire()
+			if not Settings.MQTT_UpdateFlag:
+				Settings.MQTT_Lock.release()
+				# time.sleep(1)
+				# continue
+			else:
 				Current_Speakers = Settings.MQTT_Speakers
 				Settings.MQTT_UpdateFlag = False
 				Settings.MQTT_Lock.release()
 
-				Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
-				print("Temp target speakers: " + str(Temp_Target_Speakers))
-				SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
-				mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
-				time.sleep(4)
-				break
-
-				# # Get current position represented as speakers
-				# Settings.MQTT_Lock.acquire()
-				# if not Settings.MQTT_UpdateFlag:
-				# 	Settings.MQTT_Lock.release()
-				# 	time.sleep(1)
-				# 	continue
-				# else:
-				# 	Current_Speakers = Settings.MQTT_Speakers
-				# 	Settings.MQTT_UpdateFlag = False
-				# 	Settings.MQTT_Lock.release()
-
-				# # Get speakers to play and send them to the ESP32
-				# Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
-				# print("Temp target speakers: " + str(Temp_Target_Speakers))
-				# SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
-				# mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
-				# time.sleep(3)
+			# Get speakers to play and send them to the ESP32
+			Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
+			print("Temp target speakers: " + str(Temp_Target_Speakers))
+			SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
+			mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
+			time.sleep(4)
 
 
 		time.sleep(2)
