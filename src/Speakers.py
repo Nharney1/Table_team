@@ -325,7 +325,7 @@ def ConvertSSToSpeaker(x, y):
 	return speakers
 
 def UserArrived(currentList, targetList):
-	print("In UserArrived" + str(currentList))
+	print("In UserArrived " + str(currentList) + " " + str(targetList))
 	if len(currentList) == 0:
 		return False
 	# elif len(targetList) == 1:
