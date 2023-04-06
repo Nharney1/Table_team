@@ -1,5 +1,6 @@
 from src.ComputedShot import ComputedShot
 from src.ShotSelection.run_single_test_mode import runSingleTestMode
+from src.ShotSelection.run_single_production_mode import runSingleProductionMode
 from src.ShotSelection.pool import Pool
 from src.ShotSelection.pool_objets import PoolPlayer, CueBall as aiCueBall, Ball as aiBall
 from src.ShotSelection.constants import Constants
@@ -90,7 +91,7 @@ def computeShot(Current_Ball_List):
                 ballsProd.append(convertedBall)
     
     
-    computedShot : ComputedShot = runSingleTestMode(
+    computedShot : ComputedShot = runSingleProductionMode(
         balls=ballsProd, 
         cueBall=cueBallProd, 
         magnitudes=magnitudes, 

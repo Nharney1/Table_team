@@ -163,7 +163,7 @@ def on_message(mqttc, obj, msg):
         #if abs(y - np.mean(yarray)) < 0.61:
         #   yarray.append(y)
 
-        if len(xarray) > 5:
+        if len(xarray) > 3:
             x = np.mean(xarray)
             y = np.mean(yarray)
             xstuckcounter += len(set(xarray))
@@ -209,9 +209,9 @@ def on_message(mqttc, obj, msg):
                     Settings.MQTT_Lock.release()
 
                     closestspeakerarray = []
-        if len(xarray) > 5:
+        if len(xarray) > 3:
             xarray = []
-        if len(yarray) > 5:
+        if len(yarray) > 3:
             yarray = []
 
         xarray.append(x)

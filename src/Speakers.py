@@ -332,7 +332,7 @@ def UserArrived(currentList, targetList):
 		if currentList[0] in targetList or currentList[1] in targetList:
 			return True
 	elif len(targetList) == 2:
-		if currentList[0] in targetList and currentList[1] in targetList:
+		if currentList[0] in targetList or currentList[1] in targetList:
 			return True
 	return False
 

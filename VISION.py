@@ -70,6 +70,7 @@ def main():
 		Target_Speakers = ConvertSSToSpeaker(computedShot.playerPos[0], computedShot.playerPos[1])
 		Target_Speakers.sort()
 		print("Final Target Speakers: " + str(Target_Speakers))
+
 		while not UserArrived(Current_Speakers, Target_Speakers):
 			# Get current position represented as speakers
 			Settings.MQTT_Lock.acquire()
@@ -84,7 +85,7 @@ def main():
 
 			# Get speakers to play and send them to the ESP32
 			Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
-			print("Target speakers: " + str(Temp_Target_Speakers))
+			print("Temp target speakers: " + str(Temp_Target_Speakers))
 			SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
 			mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
 			time.sleep(3)
