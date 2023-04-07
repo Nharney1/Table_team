@@ -47,6 +47,7 @@ def main():
 	Swift_Commands = []
 	Rotation_Speakers = []
 	Angle_Speakers = []
+	Temp_Target_Speakers = []
 	
 	#Initialize connections
 	Settings.InitializeGlobals()
@@ -71,7 +72,12 @@ def main():
 		Target_Speakers.sort()
 		print("Final Target Speakers: " + str(Target_Speakers))
 
-		while not UserArrived(Current_Speakers, Target_Speakers):
+		cont = True
+		while cont:
+			initial =  True
+			if  UserArrived(Current_Speakers, Target_Speakers):
+				print("ARRIVED")
+				cont = False
 			# Get current position represented as speakers
 			Settings.MQTT_Lock.acquire()
 			if not Settings.MQTT_UpdateFlag:
@@ -83,12 +89,14 @@ def main():
 				Settings.MQTT_UpdateFlag = False
 				Settings.MQTT_Lock.release()
 
-			# Get speakers to play and send them to the ESP32
-			Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
-			print("Temp target speakers: " + str(Temp_Target_Speakers))
-			SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
-			mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
-			time.sleep(3)
+			if UserArrived(Current_Speakers, Temp_Target_Speakers)  or initial:
+				# Get speakers to play and send them to the ESP32
+				inital = False
+				Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
+				print("Temp target speakers: " + str(Temp_Target_Speakers))
+				SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
+				mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
+				time.sleep(3)
 
 		# User is in the correct location, now orient the user
 		SendCommandNoArgs(STOP_SPEAKERS)
