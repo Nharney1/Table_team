@@ -328,13 +328,10 @@ def UserArrived(currentList, targetList):
 	print("In UserArrived" + str(currentList) + " " + str(targetList))
 	if len(currentList) == 0:
 		return False
-	elif len(targetList) == 1:
-		if currentList[0] in targetList or currentList[1] in targetList:
-			return True
-	elif len(targetList) == 2:
-		if currentList[0] in targetList or currentList[1] in targetList:
-			return True
-	return False
+	elif currentList[0] in targetList or currentList[1] in targetList:
+		return True
+	else: 
+		return False
 
 # Tests
 if __name__ == '__main__':

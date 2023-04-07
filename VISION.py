@@ -72,26 +72,28 @@ def main():
 		Target_Speakers.sort()
 		print("Final Target Speakers: " + str(Target_Speakers))
 
-		cont = True
-		while cont:
-			initial =  True
-			if  UserArrived(Current_Speakers, Target_Speakers):
-				print("ARRIVED")
-				cont = False
-			# Get current position represented as speakers
+		# Get current speaker
+		# If user at target speaker break out
+		# If not get next speaker to play
+			# Play next speaker
+
+		while True:
+
+			# Get current position
 			Settings.MQTT_Lock.acquire()
 			if not Settings.MQTT_UpdateFlag:
 				Settings.MQTT_Lock.release()
 				time.sleep(1)
-				continue
 			else:
 				Current_Speakers = Settings.MQTT_Speakers
 				Settings.MQTT_UpdateFlag = False
 				Settings.MQTT_Lock.release()
 
-			if UserArrived(Current_Speakers, Temp_Target_Speakers)  or initial:
-				# Get speakers to play and send them to the ESP32
-				inital = False
+			if  UserArrived(Current_Speakers, Target_Speakers):
+				print("ARRIVED")
+				arrived = True
+				break
+			else:
 				Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
 				print("Temp target speakers: " + str(Temp_Target_Speakers))
 				SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
