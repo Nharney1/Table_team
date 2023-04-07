@@ -78,22 +78,19 @@ def main():
 			# Play next speaker
 
 		while True:
-
 			# Get current position
 			Settings.MQTT_Lock.acquire()
-			if not Settings.MQTT_UpdateFlag:
-				Settings.MQTT_Lock.release()
-				time.sleep(1)
-			else:
+			if Settings.MQTT_UpdateFlag:
 				Current_Speakers = Settings.MQTT_Speakers
 				Settings.MQTT_UpdateFlag = False
-				Settings.MQTT_Lock.release()
+			Settings.MQTT_Lock.release()
 
-			if  UserArrived(Current_Speakers, Target_Speakers):
-				print("ARRIVED")
-				arrived = True
+			if UserArrived(Current_Speakers, Target_Speakers):
+				print("ARRIVED AT FINAL")
 				break
 			else:
+				if UserArrived(Current_Speakers, Temp_Target_Speakers):
+					print("ARRIVED AT TEMP")
 				Temp_Target_Speakers = DetermineNextSpeaker(Current_Speakers, Target_Speakers)
 				print("Temp target speakers: " + str(Temp_Target_Speakers))
 				SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)

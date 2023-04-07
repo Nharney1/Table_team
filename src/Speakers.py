@@ -326,6 +326,7 @@ def ConvertSSToSpeaker(x, y):
 
 def UserArrived(currentList, targetList):
 	print("In UserArrived" + str(currentList) + " " + str(targetList))
+	
 	if len(currentList) == 0:
 		return False
 	elif currentList[0] in targetList or currentList[1] in targetList:
