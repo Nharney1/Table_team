@@ -93,6 +93,7 @@ def main():
 				mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
 				time.sleep(3)
 
+		time.sleep(3)
 		# User is in the correct location, now orient the user
 		SendCommandNoArgs(STOP_SPEAKERS)
 		mqttc.publish("t/sd/feedback", ROTATE_TO_SPEAKER)
