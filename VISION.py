@@ -72,17 +72,13 @@ def main():
 		Target_Speakers.sort()
 		print("Final Target Speakers: " + str(Target_Speakers))
 
-		# Get current speaker
-		# If user at target speaker break out
-		# If not get next speaker to play
-			# Play next speaker
-
 		while True:
 			# Get current position
 			Settings.MQTT_Lock.acquire()
 			if Settings.MQTT_UpdateFlag:
 				Current_Speakers = Settings.MQTT_Speakers
 				Settings.MQTT_UpdateFlag = False
+				print("Updated current speakers")
 			Settings.MQTT_Lock.release()
 
 			if UserArrived(Current_Speakers, Target_Speakers):
