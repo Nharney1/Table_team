@@ -76,7 +76,7 @@ def main():
 			# Get current position
 			Settings.MQTT_Lock.acquire()
 			if Settings.MQTT_UpdateFlag:
-				Current_Speakers = Settings.MQTT_Speakers
+				Current_Speakers = Settings.MQTT_Speakers.copy()
 				Settings.MQTT_UpdateFlag = False
 				print("Updated current speakers")
 			Settings.MQTT_Lock.release()
