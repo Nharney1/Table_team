@@ -12,6 +12,7 @@ def InitializeGlobals():
 	global MQTT_Lock
 	global PCBPauseGame
 	global PCBEndGame
+	global waitingOnScratch
 
 	connected = False
 	monitor = None # This is a temporary name for the client/Central object
@@ -24,4 +25,5 @@ def InitializeGlobals():
 	MQTT_Lock = threading.Lock()
 	PCBPauseGame = False
 	PCBEndGame = False
+	waitingOnScratch = True
 	print("GLOBALS DONE")

@@ -49,7 +49,7 @@ def main():
 	Angle_Speakers = []
 	Temp_Target_Speakers = []
 	
-	#Initialize connections
+	Initialize connections
 	Settings.InitializeGlobals()
 	myCam = AnkerCamera(-1)
 	myCam.take_video()
@@ -58,6 +58,14 @@ def main():
 	mqttc = mqtt.Client(transport='websockets')   
 	mqttc.connect('broker.emqx.io', 8083, 60)
 	mqttc.subscribe("t/sd/feedback", 0)
+	mqtt_PI = mqtt.Client(transport='websockets')
+	mqtt_PI.on_message = on_message_PI
+	mqtt_PI.on_publish = on_publish_PI
+	mqtt_PI.on_subscribe = on_subscribe_PI
+	mqtt_PI.connect('broker.emqx.io', 8083, 60)
+	mqtt_PI.subscribe("t/sd/scratch", 0)
+	mqtt_PI.loop_start()
+	time.sleep(2)
 	MQTT_Thread = threading.Thread(target = MQTT_Main)
 	MQTT_Thread.start()
 	time.sleep(5)
@@ -92,7 +100,6 @@ def main():
 				SendCommand(SEND_SPEAKERS, Temp_Target_Speakers)
 				mqttc.publish("t/sd/feedback", WALK_TO_SPEAKER)
 				time.sleep(3)
-
 		time.sleep(3)
 		# User is in the correct location, now orient the user
 		SendCommandNoArgs(STOP_SPEAKERS)
@@ -134,3 +141,16 @@ def main():
 
 if __name__ == "__main__":
 	main()
+
+def  on_connect_PI(mqttc, obj, flags, rc):
+	print("rc: "  +  str(rc))
+
+def on_message_PI(mqttc, obj, msg):
+	print("PI msg: " +  str(msg.payload.decode("utf-8")))
+	Settings.waitingOnScratch  = False
+
+def on_publish_PI(mqttc, obj, mid):
+	print("mid: " +  str(mid))
+
+def on_subscribe_PI(mqttc, obj, mid, granted_qos):
+	print("Subscribed")
