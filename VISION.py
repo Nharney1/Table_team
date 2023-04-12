@@ -49,7 +49,7 @@ def main():
 	Angle_Speakers = []
 	Temp_Target_Speakers = []
 	
-	Initialize connections
+	#Initialize connections
 	Settings.InitializeGlobals()
 	myCam = AnkerCamera(-1)
 	myCam.take_video()
