@@ -36,6 +36,19 @@ from src.MQTT_Localization import (MQTT_Main,
 								   WALK_TO_SPEAKER,
 								   ROTATE_TO_SPEAKER)
 
+def  on_connect_PI(mqttc, obj, flags, rc):
+	print("rc: "  +  str(rc))
+
+def on_message_PI(mqttc, obj, msg):
+	print("PI msg: " +  str(msg.payload.decode("utf-8")))
+	Settings.waitingOnScratch  = False
+
+def on_publish_PI(mqttc, obj, mid):
+	print("mid: " +  str(mid))
+
+def on_subscribe_PI(mqttc, obj, mid, granted_qos):
+	print("Subscribed")
+
 def main():
 	# Game variables
 	Current_Ball_List = []
@@ -51,10 +64,6 @@ def main():
 	
 	#Initialize connections
 	Settings.InitializeGlobals()
-	myCam = AnkerCamera(-1)
-	myCam.take_video()
-	cv2.destroyAllWindows()
-	InitBLE()
 	mqttc = mqtt.Client(transport='websockets')   
 	mqttc.connect('broker.emqx.io', 8083, 60)
 	mqttc.subscribe("t/sd/feedback", 0)
@@ -68,9 +77,6 @@ def main():
 	time.sleep(2)
 	MQTT_Thread = threading.Thread(target = MQTT_Main)
 	MQTT_Thread.start()
-	time.sleep(5)
-	for i in range(3):
-		 myCam.take_picture()
 	Current_Ball_List = DetectCircles()
 	print("Initialization Complete!")
 
@@ -79,7 +85,7 @@ def main():
 		Target_Speakers = ConvertSSToSpeaker(computedShot.playerPos[0], computedShot.playerPos[1])
 		Target_Speakers.sort()
 		print("Final Target Speakers: " + str(Target_Speakers))
-
+		break
 		while True:
 			# Get current position
 			Settings.MQTT_Lock.acquire()
@@ -141,16 +147,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-
-def  on_connect_PI(mqttc, obj, flags, rc):
-	print("rc: "  +  str(rc))
-
-def on_message_PI(mqttc, obj, msg):
-	print("PI msg: " +  str(msg.payload.decode("utf-8")))
-	Settings.waitingOnScratch  = False
-
-def on_publish_PI(mqttc, obj, mid):
-	print("mid: " +  str(mid))
-
-def on_subscribe_PI(mqttc, obj, mid, granted_qos):
-	print("Subscribed")
